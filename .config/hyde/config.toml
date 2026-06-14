@@ -1,0 +1,47 @@
+# HyDE Configuration File
+# This file contains default values for all configuration options
+# Generated from schema
+
+"$schema" = "https://raw.githubusercontent.com/HyDE-Project/HyDE/refs/heads/master/Configs/.local/share/hyde/schema/config.toml.json"
+
+[notification]
+#font = "M PLUS 1 Code Medium"
+#font = "Source Han Sans JP"
+#font = "Sarasa Fixed J Nerd Font Regular"
+font_size = 10
+#scale = 10
+
+[waybar]
+#font = "M PLUS 1 Code Medium"
+#font = "Monofur Nerd Font Regular"
+#font = "Mononoki Nerd Font Regular"
+font = "Sarasa Fixed J Nerd Font Regular"
+scale = 11
+icon_size = 10
+
+[Rofi]
+#font = "SFProJPDisplay-Regular"
+#font = "Sarasa Fixed J Nerd Font Regular"
+font = "M PLUS 2 Medium"
+#font = "Source Han Sans JP"
+#font = "Zen Kaku Gothic Antique Medium"
+#scale = 10
+font_size = 12
+
+[hyprland]
+font = "Source Han Sans JP"
+
+[wallpaper]
+    backend = "mpvpaper" # Should be installed 
+    custom_paths = [
+        "$XDG_VIDEOS_DIR/Wallpapers",
+    ] # List of paths to search for wallpapers
+    filetypes = [ "png", "jpg", "mp4", "mkv" ] # explicit file types
+
+[weather] 
+location = "Sydney"
+temperature_unit = "c"
+windspeed_unit = "km/h"
+
+[hyprland-start]
+notifications = "swaync"
