@@ -36,9 +36,12 @@ __pycache__/
 !.config/hyde/config.toml
 !.config/hyde/themes
 !.config/hyde/wallbash
-# HyDE theme configs are tracked (~6MB text); wallpaper MEDIA is NOT
-# (2GB of .mp4/.png — exceeds GitHub's 100MB/file limit; backed up separately)
-.config/hyde/themes/**/wallpapers/
+# HyDE: track theme configs + STATIC image wallpapers; skip VIDEO wallpapers
+# (videos are 50-160MB each — too big for GitHub; static images are <50MB, kept)
+*.mp4
+*.webm
+*.mkv
+*.mov
 .config/hyde/themes/*.tar.gz
 .config/hyde/themes/*.tar
 .config/fastfetch/*
