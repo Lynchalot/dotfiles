@@ -46,4 +46,7 @@ __pycache__/
 .config/hyde/themes/*.tar
 .config/fastfetch/*
 !.config/fastfetch/config.jsonc
+!.config/fastfetch/config-b.jsonc
 !.config/fastfetch/config.conf
+!.config/fastfetch/logo
+.config/fastfetch/logo/**/*.mp4

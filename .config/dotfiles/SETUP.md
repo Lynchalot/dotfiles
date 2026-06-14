@@ -16,7 +16,21 @@ dots config status.showUntrackedFiles no
 # 3. Reinstall packages
 sudo pacman -S --needed - < ~/.config/dotfiles/packages-pacman-native.txt
 yay  -S --needed - < ~/.config/dotfiles/packages-aur.txt   # or paru
+
+# 4. Restore the fastfetch splash-quote cron job (new quote daily)
+crontab ~/.config/dotfiles/crontab.txt
+sudo systemctl enable --now cronie.service   # crontab won't fire without this
+~/.local/bin/update-splash.sh                # seed the first quote now
 ```
+
+## Fastfetch splash quote
+`~/.local/bin/update-splash.sh` curls a random quote from zenquotes.io (needs
+`curl` + `jq`) and writes `~/.cache/splash/quote.txt`; `fastfetch/config.jsonc`
+`cat`s that file on every shell start. It's refreshed by the `@daily` cron job
+above and by the Hyprland `exec-once` in `hypr/userprefs.conf`. The fastfetch
+logo is a random PNG from `fastfetch/logo/` (tracked). Note: `update-splash.sh`
+and `fastfetch-logo.sh` hard-code `/home/Lynchalot/` paths — edit if the new
+machine uses a different username.
 
 ## Day-to-day use
 

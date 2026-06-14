@@ -1,0 +1,1 @@
+@daily /home/Lynchalot/.local/bin/update-splash.sh >> /home/Lynchalot/.cache/splash/cron.log 2>&1
