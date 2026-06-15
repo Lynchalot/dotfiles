@@ -45,3 +45,19 @@ export EDITOR=code
 export PATH=$PATH:/home/Lynchalot/.spicetify
 eval "$(/home/Lynchalot/.local/bin/mise activate zsh)"
 eval "$(/home/Lynchalot/.local/bin/mise activate zsh)"
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/Lynchalot/miniforge3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/Lynchalot/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "/home/Lynchalot/miniforge3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/Lynchalot/miniforge3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
