@@ -23,6 +23,11 @@ sudo systemctl enable --now cronie.service   # crontab won't fire without this
 ~/.local/bin/update-splash.sh                # seed the first quote now
 ```
 
+# 5. Refresh the quote on resume-from-suspend (cron doesn't run while asleep)
+sudo install -Dm755 ~/.config/dotfiles/system-sleep-refresh-splash-quote \
+    /etc/systemd/system-sleep/refresh-splash-quote
+```
+
 ## Fastfetch splash quote
 `~/.local/bin/update-splash.sh` curls a random quote from zenquotes.io (needs
 `curl` + `jq`) and writes `~/.cache/splash/quote.txt`; `fastfetch/config.jsonc`

@@ -1,0 +1,9 @@
+#!/bin/sh
+# Refresh the fastfetch splash quote when resuming from sleep/suspend.
+# systemd-sleep calls this with $1=pre (going to sleep) or $1=post (waking).
+case "$1" in
+    post)
+        sleep 3   # let WiFi reconnect before fetching
+        su - Lynchalot -c '/home/Lynchalot/.local/bin/update-splash.sh'
+        ;;
+esac
