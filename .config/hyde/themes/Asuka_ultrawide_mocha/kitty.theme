@@ -1,5 +1,8 @@
 $HOME/.config/kitty/theme.conf|killall -SIGUSR1 kitty
 
+background_opacity 0.60
+background_blur 20
+
 ## name:     Catppuccin Mocha 🌿
 ## author:   Pocco81 (https://github.com/Pocco81)
 ## license:  MIT

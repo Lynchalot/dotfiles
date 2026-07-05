@@ -16,18 +16,18 @@
  *
  * */
 /* background */
-@define-color sw-cc-bg #111F40;
+@define-color sw-cc-bg #292125;
 /* border */
-@define-color sw-cc-border-color #E1EBDA;
+@define-color sw-cc-border-color #E6D8CB;
 /*
 *
 * notification title 'the notification word on control center'
 *
 * */
 /* foreground */
-/* @define-color sw-noti-titl-fg #E07259; */
+/* @define-color sw-noti-titl-fg #B0988F; */
 /* shadow */
-/* @define-color sw-noti-titl-shad #E1EBDA; */
+/* @define-color sw-noti-titl-shad #E6D8CB; */
 
 
 .control-center {
@@ -46,13 +46,13 @@
 *
 * */
 /* background */
-@define-color sw-noti-window-bg #111F40;
+@define-color sw-noti-window-bg #292125;
 /* border */
-@define-color sw-noti-window-br #E1EBDA;
+@define-color sw-noti-window-br #E6D8CB;
 /* color */
 @define-color sw-noti-window-txt #FFFFFF;
 /* hover */
-@define-color sw-noti-bg-hover #57526E;
+@define-color sw-noti-bg-hover #6E585A;
 
 /* @define-color noti-bg-opaque #5A8FB2; */
 /* @define-color noti-bg-hover-opaque #4B697D; */
@@ -76,13 +76,13 @@
 *
 * */
 /* foreground */
-@define-color sw-msg-sum-fg #E07259;
+@define-color sw-msg-sum-fg #B0988F;
 /* shadow */
-/* @define-color sw-msg-sum-shad #E1EBDA; */
+/* @define-color sw-msg-sum-shad #E6D8CB; */
 /* time */
-/* @define-color sw-msg-time #E1EBDA; */
+/* @define-color sw-msg-time #E6D8CB; */
 /* body */
-@define-color sw-msg-body #E1EBDA;
+@define-color sw-msg-body #E6D8CB;
 
 
 .notification-row .notification-background .notification .notification-default-action .notification-content .text-box .summary {
@@ -101,15 +101,15 @@
 *
 * */
 /* icon */
-@define-color sw-noti-gr-icon #E1EBDA;
+@define-color sw-noti-gr-icon #E6D8CB;
 /* button */
-@define-color sw-noti-gr-collapse-but-hvr #E1EBDA;
+@define-color sw-noti-gr-collapse-but-hvr #E6D8CB;
 /* icon */
-@define-color sw-noti-gr-collapse-but-icon #E1EBDA;
+@define-color sw-noti-gr-collapse-but-icon #E6D8CB;
 /* button */
-/* @define-color sw-noti-gr-close-btn-hvr #E1EBDA; */
+/* @define-color sw-noti-gr-close-btn-hvr #E6D8CB; */
 /* icon */
-/* @define-color sw-noti-gr-close-btn-icon #E1EBDA; */
+/* @define-color sw-noti-gr-close-btn-icon #E6D8CB; */
 
 .notification-group .notification-group-headers .notification-group-icon {
   /* color: @text-color; */

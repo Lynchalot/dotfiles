@@ -29,3 +29,12 @@ if [[ ${HYDE_ZSH_NO_PLUGINS} != "1" ]]; then
 fi
 # dotfiles bare repo
 alias dots='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+
+# yazi wrapper: `y` opens yazi and cd's to its last dir on quit (q to keep cwd)
+function y() {
+    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+    yazi "$@" --cwd-file="$tmp"
+    IFS= read -r -d '' cwd < "$tmp"
+    [ -n "$cwd" ] && [ "$cwd" != "$PWD" ] && builtin cd -- "$cwd"
+    rm -f -- "$tmp"
+}

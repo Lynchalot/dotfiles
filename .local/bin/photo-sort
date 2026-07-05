@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Wrapper for the local CLIP photo sorter.
+exec "$HOME/.local/share/photo-sort/.venv/bin/python" \
+     "$HOME/.local/share/photo-sort/photo_sort.py" "$@"

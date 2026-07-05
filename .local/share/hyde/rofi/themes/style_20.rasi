@@ -1,0 +1,201 @@
+/**
+ * ROFI Layout
+ *
+ * Style 20: Based on Style 9 (CenterStack) + readable search field, wider wallpaper.
+ * Attribute: rofilaunch,launcher
+ * User: Lynchalot [ Custom CenterStack ]
+ */
+
+// Config //
+configuration {
+    modi:                        "drun,filebrowser,window,run";
+    show-icons:                  true;
+    display-drun:                " ";
+    display-run:                " ";
+    display-filebrowser:                " ";
+    display-window:                " ";
+    drun-display-format:         "{name}";
+    window-format:               "{w}{t}";
+    font:                        "Sarasa UI J Nerd Font 11";
+    icon-theme:                  "Tela-circle-dracula";
+}
+
+@theme "~/.config/rofi/theme.rasi"
+
+
+// Main //
+window {
+    height:                      21em;
+    width:                       64em;
+    transparency:                "real";
+    fullscreen:                  false;
+    enabled:                     true;
+    cursor:                      "default";
+    spacing:                     0em;
+    padding:                     0em;
+    border:                      2px;
+    border-color:                @main-br;
+    border-radius:               18px;
+    background-color:            @main-bg;
+}
+mainbox {
+    enabled:                     true;
+    spacing:                     1em;
+    padding:                     1em;
+    orientation:                 horizontal;
+    children:                    [ "imagecol" , "listbox" ];
+    background-color:            transparent;
+}
+
+
+// Left: ultrawide wallpaper (monitor aspect 3440x1440 = 2.389:1), centered //
+imagecol {
+    enabled:                     true;
+    width:                       37em;
+    spacing:                     0.8em;
+    padding:                     0em;
+    orientation:                 vertical;
+    children:                    [ "imagebox" , "mode-switcher" ];
+    background-color:            transparent;
+}
+imagebox {
+    enabled:                     true;
+    expand:                      false;
+    children:                    [ "image-dummy" ];
+    background-color:            transparent;
+    background-image:            url("~/.cache/hyde/wall.thmb", width);
+    border:                      0px;
+    border-radius:               14px;
+}
+image-dummy {
+    /* vertical padding forces the box height -> 37em wide / 2.389 = 15.5em -> ~7.75em each side */
+    padding:                     7.75em 0em;
+    background-color:            transparent;
+}
+
+// Mode tabs under the image //
+mode-switcher {
+    enabled:                     true;
+    spacing:                     0.6em;
+    padding:                     0em;
+    background-color:            transparent;
+}
+button {
+    padding:                     0.6em;
+    cursor:                      pointer;
+    border-radius:               10px;
+    background-color:            #181825ff;
+    text-color:                  @main-fg;
+    font:                        "JetBrainsMono Nerd Font 13";
+}
+button selected {
+    background-color:            @select-bg;
+    text-color:                  @select-fg;
+}
+
+
+// Right: search field + list //
+listbox {
+    spacing:                     1em;
+    padding:                     0em;
+    orientation:                 vertical;
+    expand:                      true;
+    children:                    [ "inputbar" , "listview" ];
+    background-color:            transparent;
+}
+
+// Readable search field //
+inputbar {
+    enabled:                     true;
+    spacing:                     0.7em;
+    padding:                     0.85em 1.1em;
+    children:                    [ "prompt" , "entry" ];
+    background-color:            #181825ff;
+    text-color:                  #ffffffff;
+    border:                      2px;
+    border-color:                @main-br;
+    border-radius:               12px;
+}
+prompt {
+    enabled:                     true;
+    background-color:            transparent;
+    text-color:                  @main-br;
+    font:                        "Sarasa UI J Nerd Font 11";
+}
+entry {
+    enabled:                     true;
+    background-color:            transparent;
+    text-color:                  #ffffffff;
+    cursor:                      text;
+    placeholder:                 "Search apps…";
+    placeholder-color:           #9399b2ff;
+    font:                        "Sarasa UI J Nerd Font 11";
+}
+
+
+// Lists //
+listview {
+    enabled:                     true;
+    spacing:                     0.15em;
+    padding:                     0.2em;
+    columns:                     1;
+    lines:                       6;
+    cycle:                       true;
+    dynamic:                     true;
+    scrollbar:                   false;
+    layout:                      vertical;
+    reverse:                     false;
+    expand:                      false;
+    fixed-height:                true;
+    fixed-columns:               true;
+    cursor:                      "default";
+    background-color:            transparent;
+    text-color:                  @main-fg;
+    expand:                      true;
+}
+dummy {
+    background-color:            transparent;
+}
+
+
+// Elements //
+element {
+    enabled:                     true;
+    spacing:                     1em;
+    padding:                     0.5em 0.5em 0.5em 1.2em;
+    cursor:                      pointer;
+    border-radius:               10px;
+    background-color:            transparent;
+    text-color:                  @main-fg;
+}
+element selected.normal {
+    background-color:            @select-bg;
+    text-color:                  @select-fg;
+}
+element-icon {
+    size:                        2.5em;
+    cursor:                      inherit;
+    background-color:            transparent;
+    text-color:                  inherit;
+}
+element-text {
+    vertical-align:              0.5;
+    horizontal-align:            0.0;
+    cursor:                      inherit;
+    background-color:            transparent;
+    text-color:                  inherit;
+}
+
+// Error message //
+error-message {
+    text-color:                  @main-fg;
+    background-color:            @main-bg;
+    text-transform:              capitalize;
+    children:                    [ "textbox" ];
+}
+textbox {
+    text-color:                  inherit;
+    background-color:            inherit;
+    vertical-align:              0.5;
+    horizontal-align:            0.5;
+}

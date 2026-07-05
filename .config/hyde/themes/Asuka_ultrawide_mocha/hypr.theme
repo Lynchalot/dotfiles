@@ -11,6 +11,7 @@ $COLOR_SCHEME = prefer-dark
 exec = gsettings set org.gnome.desktop.interface icon-theme $ICON_THEME
 exec = gsettings set org.gnome.desktop.interface gtk-theme $GTK_THEME
 exec = gsettings set org.gnome.desktop.interface color-scheme $COLOR_SCHEME
+exec = gsettings set org.gnome.desktop.interface font-name "Sarasa UI J Nerd Font 10"
 
 general {
     gaps_in = 3
@@ -35,8 +36,8 @@ decoration {
 
     blur {
         enabled = yes
-        size = 6
-        passes = 3
+        size = 4
+        passes = 2
         new_optimizations = on
         ignore_opacity = on
         xray = false
@@ -44,3 +45,12 @@ decoration {
 }
 
 layerrule = rounding:10,waybar
+
+# Animated Mocha rainbow border on the active window
+general {
+    col.active_border = rgba(FF7979FF) rgba(F5C2E7FF) rgba(CBA6F7FF) rgba(A6ADC8FF) 45deg
+}
+animations {
+    bezier = liner, 1, 1, 1, 1
+    animation = borderangle, 1, 30, liner, loop
+}
