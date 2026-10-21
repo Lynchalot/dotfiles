@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- mystyle9 only: Material Symbols icons via markup labels -->
+<interface>
+    <object class="GtkMenu" id="menu">
+        <child>
+            <object class="GtkMenuItem" id="lock">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;lock&lt;/span&gt;  Lock</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="logout">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;logout&lt;/span&gt;  Log out</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="suspend">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;bedtime&lt;/span&gt;  Suspend</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkSeparatorMenuItem" id="d1" />
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="reboot">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;restart_alt&lt;/span&gt;  Reboot</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="reboot-firmware">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;developer_board&lt;/span&gt;  Reboot to UEFI</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="shutdown">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;power_settings_new&lt;/span&gt;  Shut down</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </object>
+</interface>

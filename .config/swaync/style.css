@@ -1,3 +1,6 @@
+/* Wallbash palette: HyDE regenerates this on every theme switch */
+@import "/home/Lynchalot/.cache/hyde/wallbash/gtk.css";
+
 :root {
   --cc-bg: rgba(46, 46, 46, 0.7);
   --noti-border-color: rgba(255, 255, 255, 0.15);
@@ -561,7 +564,7 @@ notificationwindow, blankwindow, blankwindow {
 }
 
 /* ============================================================ */
-/* === Ricing override: Catppuccin Mocha (matches waybar) ==== */
+/* === Ricing override: follows HyDE theme (wallbash) ====== */
 /* ============================================================ */
 
 * {
@@ -570,8 +573,8 @@ notificationwindow, blankwindow, blankwindow {
 }
 
 .control-center {
-    background: rgba(17, 17, 27, 0.88);
-    border: 1px solid rgba(166, 173, 200, 0.3);
+    background: alpha(@wallbash_pry1, 0.88);
+    border: 1px solid alpha(@wallbash_1xa5, 0.35);
     border-radius: 16px;
     padding: 12px;
     margin: 8px;
@@ -579,32 +582,32 @@ notificationwindow, blankwindow, blankwindow {
 
 .notification-row .notification-background,
 .notification-row .notification-background .notification {
-    background: #11111b;
+    background: @wallbash_pry1;
     border-radius: 14px;
-    border: 1px solid rgba(166, 173, 200, 0.25);
+    border: 1px solid alpha(@wallbash_1xa5, 0.3);
 }
 .notification-row .notification-background:hover {
-    background: #1e1e2e;
+    background: @wallbash_1xa1;
 }
 .notification-row:focus .notification-background {
-    background: #1e1e2e;
-    box-shadow: inset 0 0 0 1px #cba6f7;
+    background: @wallbash_1xa1;
+    box-shadow: inset 0 0 0 1px @wallbash_1xa7;
 }
 
 .notification-content > .summary,
 .widget-title > label,
 .widget-dnd,
 .widget-mpris {
-    color: #cdd6f4;
+    color: @wallbash_1xa9;
 }
 .notification-content > .body {
-    color: #bac2de;
+    color: @wallbash_1xa8;
 }
 
 .widget-title > button,
 .widget-inhibitors > button {
-    background: rgba(166, 173, 200, 0.2);
-    color: #cdd6f4;
+    background: alpha(@wallbash_1xa5, 0.25);
+    color: @wallbash_1xa9;
     border-radius: 10px;
     padding: 4px 14px;
     border: none;
@@ -612,56 +615,56 @@ notificationwindow, blankwindow, blankwindow {
 }
 .widget-title > button:hover,
 .widget-inhibitors > button:hover {
-    background: #f5c2e7;
-    color: #313244;
+    background: @wallbash_1xa7;
+    color: @wallbash_pry1;
 }
 
 .widget-dnd {
-    background: #11111b;
+    background: @wallbash_pry1;
     border-radius: 14px;
     padding: 10px 14px;
     margin: 6px 0;
 }
 .widget-dnd > switch {
-    background: #313244;
+    background: @wallbash_1xa2;
     border-radius: 999px;
     border: none;
 }
 .widget-dnd > switch:checked {
-    background: #a6adc8;
+    background: @wallbash_1xa6;
 }
 .widget-dnd > switch slider {
-    background: #cdd6f4;
+    background: @wallbash_1xa9;
     border-radius: 999px;
     border: none;
 }
 
 .widget-mpris,
 .widget-mpris .widget-mpris-player {
-    background: #11111b;
+    background: @wallbash_pry1;
     border-radius: 14px;
     padding: 10px;
     margin: 6px 0;
 }
 .widget-mpris button {
     background: transparent;
-    color: #cdd6f4;
+    color: @wallbash_1xa9;
     border-radius: 8px;
     border: none;
 }
 .widget-mpris button:hover {
-    background: rgba(245, 194, 231, 0.3);
+    background: alpha(@wallbash_1xa7, 0.3);
 }
 
 .widget-buttons-grid {
-    background: #11111b;
+    background: @wallbash_pry1;
     border-radius: 14px;
     padding: 8px;
     margin: 6px 0;
 }
 .widget-buttons-grid > flowbox > flowboxchild > button {
-    background: #313244;
-    color: #cdd6f4;
+    background: @wallbash_1xa2;
+    color: @wallbash_1xa9;
     border-radius: 12px;
     padding: 8px;
     border: none;
@@ -670,29 +673,29 @@ notificationwindow, blankwindow, blankwindow {
     min-height: 36px;
 }
 .widget-buttons-grid > flowbox > flowboxchild > button:hover {
-    background: #f5c2e7;
-    color: #313244;
+    background: @wallbash_1xa7;
+    color: @wallbash_pry1;
 }
 .widget-buttons-grid > flowbox > flowboxchild > button.toggle:checked {
-    background: #a6adc8;
-    color: #313244;
+    background: @wallbash_1xa6;
+    color: @wallbash_pry1;
 }
 
 .widget-menubar > box > .menu-button-bar > button {
-    background: #313244;
-    color: #cdd6f4;
+    background: @wallbash_1xa2;
+    color: @wallbash_1xa9;
     border-radius: 12px;
     padding: 6px 12px;
     border: none;
 }
 .widget-menubar > box > .menu-button-bar > button:hover {
-    background: #f5c2e7;
-    color: #313244;
+    background: @wallbash_1xa7;
+    color: @wallbash_pry1;
 }
 
 .close-button {
-    background: rgba(245, 194, 231, 0.4);
-    color: #cdd6f4;
+    background: alpha(@wallbash_1xa7, 0.4);
+    color: @wallbash_1xa9;
     border-radius: 999px;
     border: none;
     box-shadow: none;
@@ -700,48 +703,48 @@ notificationwindow, blankwindow, blankwindow {
     min-height: 24px;
 }
 .close-button:hover {
-    background: #f5c2e7;
-    color: #313244;
+    background: @wallbash_1xa7;
+    color: @wallbash_pry1;
 }
 
 .notification-default-action,
 .notification-action {
     background: transparent;
-    color: #cdd6f4;
+    color: @wallbash_1xa9;
     border-radius: 10px;
 }
 .notification-action:hover {
-    background: rgba(245, 194, 231, 0.2);
+    background: alpha(@wallbash_1xa7, 0.2);
 }
 
-/* Volume + backlight sliders (Mocha) */
+/* Volume + backlight sliders (wallbash) */
 .widget-volume,
 .widget-backlight {
-    background: #11111b;
+    background: @wallbash_pry1;
     border-radius: 14px;
     padding: 10px 14px;
     margin: 6px 0;
-    color: #cdd6f4;
+    color: @wallbash_1xa9;
 }
 .widget-volume label,
 .widget-backlight label {
-    color: #cdd6f4;
+    color: @wallbash_1xa9;
     margin-right: 8px;
 }
 .widget-volume scale trough,
 .widget-backlight scale trough {
-    background: #313244;
+    background: @wallbash_1xa2;
     border-radius: 999px;
     min-height: 6px;
 }
 .widget-volume scale trough highlight,
 .widget-backlight scale trough highlight {
-    background: #a6adc8;
+    background: @wallbash_1xa6;
     border-radius: 999px;
 }
 .widget-volume scale slider,
 .widget-backlight scale slider {
-    background: #cdd6f4;
+    background: @wallbash_1xa9;
     border-radius: 999px;
     min-width: 16px;
     min-height: 16px;
@@ -750,13 +753,13 @@ notificationwindow, blankwindow, blankwindow {
 }
 .widget-volume scale slider:hover,
 .widget-backlight scale slider:hover {
-    background: #f5c2e7;
+    background: @wallbash_1xa7;
 }
 
 /* Make the dynamic volume icon more visible */
 .widget-volume > box > button,
 .widget-volume > box > button > image {
-    color: #cdd6f4;
+    color: @wallbash_1xa9;
     background: transparent;
     border: none;
     box-shadow: none;
@@ -765,7 +768,7 @@ notificationwindow, blankwindow, blankwindow {
     -gtk-icon-size: 18px;
 }
 .widget-volume > box > button:hover {
-    background: rgba(245, 194, 231, 0.2);
+    background: alpha(@wallbash_1xa7, 0.2);
     border-radius: 8px;
 }
 
@@ -773,4 +776,37 @@ notificationwindow, blankwindow, blankwindow {
 .widget-volume label {
     font-size: 20px;
     margin-right: 12px;
+}
+
+/* Cards, stacked groups, focus ring and hovers that upstream paints grey/blue */
+.notification-row .notification-background .notification,
+.notification-row .notification-background .notification .notification-default-action,
+.notification-group.collapsed .notification-row .notification {
+    background: @wallbash_pry1;
+    color: @wallbash_1xa9;
+}
+.notification-row .notification-background .notification .notification-default-action:hover,
+.notification-group.collapsed:hover .notification-row:not(:only-child) .notification,
+.control-center .control-center-list .notification .notification-action:hover,
+.widget-mpris .widget-mpris-player .mpris-overlay button:hover {
+    background: @wallbash_1xa1;
+}
+.notification-row:focus,
+.notification-group:focus {
+    background: transparent;
+    outline: 1px solid alpha(@wallbash_1xa6, 0.6);
+    outline-offset: -1px;
+    border-radius: 14px;
+}
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-entry {
+    background: @wallbash_1xa1;
+    color: @wallbash_1xa9;
+}
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-button {
+    background: @wallbash_1xa2;
+    color: @wallbash_1xa9;
+}
+.notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-button:hover {
+    background: @wallbash_1xa7;
+    color: @wallbash_pry1;
 }

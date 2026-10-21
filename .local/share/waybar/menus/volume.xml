@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- mystyle9 only: Material Symbols icons via markup labels -->
+<interface>
+    <object class="GtkMenu" id="menu">
+        <child>
+            <object class="GtkMenuItem" id="select-output">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;speaker&lt;/span&gt;  Switch output…</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="toggle-mute">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;volume_off&lt;/span&gt;  Mute speakers</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="toggle-mic">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;mic_off&lt;/span&gt;  Mute microphone</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+        <child>
+            <object class="GtkSeparatorMenuItem" id="d1" />
+        </child>
+        <child>
+            <object class="GtkMenuItem" id="mixer">
+                <child>
+                    <object class="GtkLabel">
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;tune&lt;/span&gt;  Open mixer</property>
+                        <property name="use-markup">True</property>
+                        <property name="xalign">0</property>
+                    </object>
+                </child>
+            </object>
+        </child>
+    </object>
+</interface>

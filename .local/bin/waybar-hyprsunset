@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Wraps `hyde-shell hyprsunset -rq` for waybar: copies "alt" (active/inactive)
+# into "class" so CSS can style the on state. --badge prints "on" only while active.
+out=$(hyde-shell hyprsunset -rq 2>/dev/null)
+if [ "${1:-}" = "--badge" ]; then
+    grep -q '"alt" *: *"active"' <<<"$out" && echo on
+    exit 0
+fi
+python3 -c 'import json,sys; d=json.loads(sys.stdin.read()); d["class"]=d.get("alt",""); print(json.dumps(d))' <<<"$out"

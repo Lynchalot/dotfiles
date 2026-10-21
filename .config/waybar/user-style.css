@@ -1,1 +1,11 @@
 /* User custom styles */
+
+/* Caffeine Mode -- custom/caffeine, replaces the built-in idle_inhibitor.
+   Colors match the tooltip foregrounds HyDE used for the old module. */
+#custom-caffeine.activated {
+    color: #98c379;
+}
+
+#custom-caffeine.deactivated {
+    color: #e06c75;
+}

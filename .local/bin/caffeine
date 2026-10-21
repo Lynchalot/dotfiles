@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# caffeine - idle inhibitor that survives waybar reloads.
+#
+# waybar's built-in idle_inhibitor module holds a Wayland zwp_idle_inhibitor_v1
+# bound to the bar's own surface, and its on/off state is a process-local static.
+# Any waybar restart or SIGUSR2 hot-reload -- which HyDE does on theme, wallpaper
+# and layout changes (~/.local/lib/hyde/waybar.py) -- destroys the bar, drops the
+# inhibitor, and resets the toggle with no notification. The machine then falls
+# through hypridle's 2700s `systemctl suspend` listener as if caffeine was never on.
+#
+# This parks the inhibit in a transient systemd user unit instead, so it is
+# independent of waybar's lifetime. hypridle honours it because hypridle.conf sets
+# ignore_systemd_inhibit = false.
+
+set -euo pipefail
+
+UNIT=caffeine
+SIGNAL=8 # must match "signal" in ~/.config/waybar/modules/caffeine.jsonc
+
+is_on() { systemctl --user is-active --quiet "${UNIT}.service"; }
+
+on() {
+    is_on && return 0
+    systemd-run --user --quiet --collect --unit="$UNIT" \
+        --description="Caffeine Mode (idle inhibitor)" \
+        systemd-inhibit --what=idle \
+        --who="Caffeine Mode" \
+        --why="Caffeine Mode enabled from waybar" \
+        sleep infinity
+}
+
+off() {
+    is_on || return 0
+    systemctl --user stop "${UNIT}.service"
+}
+
+# Icons are the same nf-md-coffee / nf-md-coffee_off glyphs HyDE used for
+# idle_inhibitor, kept as JSON surrogate escapes so waybar decodes them.
+status() {
+    if is_on; then
+        cat <<'EOF'
+{"text":"󰅶","alt":"activated","class":"activated","tooltip":"<span foreground='#98c379'>󰅶 Caffeine Mode Active</span>\nPrevents system from going to sleep"}
+EOF
+    else
+        cat <<'EOF'
+{"text":"󰛊","alt":"deactivated","class":"deactivated","tooltip":"<span foreground='#e06c75'>󰛊 Caffeine Mode Inactive</span>\nSystem will follow normal power settings"}
+EOF
+    fi
+}
+
+# Signal only waybar's main process. `pkill -x waybar` also matches the reaped
+# <defunct> children waybar leaves behind, which makes one toggle look like five
+# reloads in the journal.
+refresh() {
+    local pid=""
+    pid=$(systemctl --user show -p MainPID --value \
+        "hyde-${XDG_SESSION_DESKTOP:-Hyprland}-bar.service" 2>/dev/null) || true
+    if [ -z "$pid" ] || [ "$pid" = 0 ]; then
+        pid=$(pgrep -x -o waybar 2>/dev/null) || true
+    fi
+    [ -n "$pid" ] && kill -RTMIN+"$SIGNAL" "$pid" 2>/dev/null || true
+}
+
+case "${1:-status}" in
+on) on && refresh ;;
+off) off && refresh ;;
+toggle)
+    if is_on; then off; else on; fi
+    refresh
+    ;;
+status) status ;;
+*)
+    echo "usage: ${0##*/} {on|off|toggle|status}" >&2
+    exit 2
+    ;;
+esac

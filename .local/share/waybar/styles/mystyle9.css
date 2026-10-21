@@ -1,0 +1,99 @@
+/* mystyle9: HyDE picks this file automatically for the mystyle9 layout
+   (styles/<layout>*.css), so nothing here touches other layouts.
+   Ideas borrowed from github.com/Harsh-bin/waybar-config: uniform button
+   padding, a plain hover fade, and bordered rounded tooltips. */
+@import "defaults.css";
+
+/* One size for the whole bar (overrides global.css `* { font-size: 11px }`) */
+window#waybar * {
+    font-size: 12px;
+}
+
+/* Clickable things and drawer triggers: same-sized buttons with an inset hover */
+window#waybar.top #clock:not(.date),
+window#waybar.top #cpu,
+window#waybar.top #pulseaudio,
+window#waybar.top #custom-weather,
+window#waybar.top #custom-swaync,
+window#waybar.top #custom-tools,
+window#waybar.top #custom-snip,
+window#waybar.top #custom-picker,
+window#waybar.top #custom-cliphist,
+window#waybar.top #custom-rec,
+window#waybar.top #custom-wallchange,
+window#waybar.top #custom-hyprsunset,
+window#waybar.top #custom-caffeine,
+window#waybar.top #custom-caffeine-badge,
+window#waybar.top #custom-hyprsunset-badge,
+window#waybar.top #custom-powerbtn,
+window#waybar.top #custom-lock,
+window#waybar.top #custom-logout,
+window#waybar.top #custom-reboot {
+    padding: 0 8px;
+    margin: 4px 1px;
+    border-radius: 3pt;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+window#waybar.top #clock:not(.date):hover,
+window#waybar.top #cpu:hover,
+window#waybar.top #pulseaudio:hover,
+window#waybar.top #custom-weather:hover,
+window#waybar.top #custom-swaync:hover,
+window#waybar.top #custom-tools:hover,
+window#waybar.top #custom-snip:hover,
+window#waybar.top #custom-picker:hover,
+window#waybar.top #custom-cliphist:hover,
+window#waybar.top #custom-rec:hover,
+window#waybar.top #custom-wallchange:hover,
+window#waybar.top #custom-hyprsunset:hover,
+window#waybar.top #custom-caffeine:hover,
+window#waybar.top #custom-powerbtn:hover,
+window#waybar.top #custom-lock:hover,
+window#waybar.top #custom-logout:hover,
+window#waybar.top #custom-reboot:hover {
+    background: @wb-hvr-bg;
+    color: @wb-hvr-fg;
+}
+
+/* The larger speaker glyph makes this label 2px taller, which centres it 1px low */
+window#waybar.top #pulseaudio {
+    margin-top: 3px;
+    margin-bottom: 5px;
+}
+
+/* Tooltips: rounded, theme background, thin accent border */
+tooltip {
+    border-radius: 8px;
+    background: @main-bg;
+    border: 1px solid alpha(@wb-hvr-fg, 0.55);
+}
+tooltip label {
+    padding: 4px 6px;
+}
+
+/* Caffeine: "on" looks like the active workspace (solid highlight, filled icon).
+   The badge only exists while caffeine is on, so it is visible with the drawer shut. */
+window#waybar.top #custom-caffeine.deactivated {
+    color: @main-fg;
+}
+window#waybar.top #custom-caffeine.activated,
+window#waybar.top #custom-caffeine-badge {
+    background: @wb-act-bg;
+    color: @wb-act-fg;
+}
+
+/* Night light: same on-state treatment as caffeine */
+window#waybar.top #custom-hyprsunset.inactive {
+    color: @main-fg;
+}
+window#waybar.top #custom-hyprsunset.active,
+window#waybar.top #custom-hyprsunset-badge {
+    background: @wb-act-bg;
+    color: @wb-act-fg;
+}
+
+/* Dropdown menus (power, volume): same 12px text as the bar */
+menu label {
+    font-size: 12px;
+}

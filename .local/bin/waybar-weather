@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""Compact HyDE weather for waybar.
+default : bar text without location; tooltip = now + daily hi/lo (no hourly rows)
+--brief : one-line details for the hover drawer (feels, humidity, wind, tomorrow)"""
+import json, os, re, subprocess, sys
+env = dict(os.environ, WEATHER_SHOW_LOCATION="False")
+out = subprocess.run(["hyde-shell", "weather"], capture_output=True, text=True, env=env).stdout
+try:
+    d = json.loads(out)
+except ValueError:
+    raise SystemExit(0)
+tip = d.get("tooltip", "")
+I = lambda n: f"<span face='Material Symbols Rounded' font_size='11.5pt' rise='-2.5pt'>{n}</span>"
+EMOJI = [("⛈", "thunderstorm"), ("🌩", "thunderstorm"), ("🌨", "weather_snowy"), ("❄", "weather_snowy"),
+         ("🌧", "rainy"), ("🌦", "rainy"), ("🌫", "foggy"), ("⛅", "partly_cloudy_day"), ("🌤", "partly_cloudy_day"),
+         ("🌥", "partly_cloudy_day"), ("☁", "cloud"), ("☀", "sunny"), ("🌙", "clear_night")]
+def iconify(text):
+    for e, name in EMOJI:
+        if e in text:
+            return I(name) + " " + re.sub(r"^\S+\s*", "", text.strip())
+    return text
+lines = [l for l in tip.split("\n") if not re.match(r"^\d{1,2}\s{2,}", l)]
+compact = re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
+if "--brief" in sys.argv:
+    grab = lambda pat: (re.search(pat, tip) or [None, "?"])[1]
+    days = re.findall(r"⬆️\s*(\S+)\s*⬇️\s*(\S+)", tip)
+    parts = [f"feels {grab(r'Feels like:\s*(\S+)')}", I("humidity_percentage") + f" {grab(r'Humidity:\s*(\S+)')}",
+             (I("air") + f" {grab(r'Wind:\s*(\S+)')}").replace("Km/h", " km/h")]
+    if len(days) > 1:
+        parts.append(f"tmrw {days[1][0]}/{days[1][1]}")
+    print(json.dumps({"text": "  ·  ".join(parts), "tooltip": compact}))
+    raise SystemExit(0)
+d["tooltip"] = compact
+d["text"] = iconify(d.get("text", ""))
+print(json.dumps(d))
