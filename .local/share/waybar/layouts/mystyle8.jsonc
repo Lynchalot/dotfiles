@@ -32,7 +32,7 @@
         "modules": [
             "custom/hyprsunset",
             "idle_inhibitor",
-            "clock"
+            "clock",
         ]
     },
 

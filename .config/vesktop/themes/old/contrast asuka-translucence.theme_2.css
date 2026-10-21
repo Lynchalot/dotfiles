@@ -1,0 +1,166 @@
+/**
+ * @name asuka-translucence
+ * @version 1.3.0
+ * @description Translucence theme with Asuka visual identity. Font and colour palette from Asuka, fully translucent background.
+ * @base-theme Translucence by CapnKitten
+ * @visual-identity Asuka by Gibbu
+ * @BDEditor Translucence
+*/
+
+@import url('https://capnkitten.github.io/BetterDiscord/Themes/Translucence/css/source.css');
+@import url('https://fonts.googleapis.com/css2?family=Source+Han+Sans:wght@100;300;400;500;700&display=swap');
+
+/* ──────────────────────────────────────────────────────────────────────────
+   All styling is driven through Translucence's own variables, which the base
+   theme keeps current against Discord's class-hash rotation. No raw hashed
+   class selectors are targeted, so nothing here breaks on a Discord update.
+   ────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Layout & chrome */
+  --app-bg: transparent;
+  --app-blur: 0px;
+  --app-margin: 0px;
+  --app-radius: 12px;              /* matches Asuka --window-roundness */
+
+  /* Accent — Asuka's tint (104,93,99) converted faithfully to HSL.
+     Near-neutral mauve rather than pink. Nudge saturation up if you want
+     more colour; the source is almost grey. */
+  --accent-hue: 343;
+  --accent-saturation: 6%;
+  --accent-lightness: 39%;
+  --accent-opacity: 1;
+
+  /* Panels fully transparent so the desktop wallpaper shows through.
+     Translucence cascades these into Discord's --background-* tokens,
+     so no separate .theme-dark override block is needed. */
+  --sidebar-color: rgba(0,0,0,0) !important;
+  --main-content-color: rgba(0,0,0,0) !important;
+  --card-color: rgba(0,0,0,0) !important;
+
+  /* ── Legibility scrim ──────────────────────────────────────────────────
+     With no background image, message readability depends on your wallpaper.
+     This puts a faint dark layer behind the message column only.
+     Set to rgba(0,0,0,0) if you want pure transparency and have a dark,
+     calm wallpaper. Raise the alpha (0.25 → 0.4) for busier wallpapers. */
+  --message-color: rgba(0,0,0,0.25) !important;
+
+  /* Interactive text colours — Asuka's link/UI palette */
+  --interactive-normal: #C8D2D6;
+  --interactive-hover: #dde3e6;
+  --interactive-active: #ffffff;
+  --interactive-muted: #9e7f8f;
+
+  /* Hover/selection modifiers */
+  --background-modifier-hover: rgba(200,210,214,0.07);
+  --background-modifier-selected: rgba(200,210,214,0.14);
+
+  /* Reply line — same mauve, lighter for visibility */
+  --reply-hue: 343;
+  --reply-saturation: 6%;
+  --reply-lightness: 61%;
+  --reply-opacity: 1;
+
+  /* Text input */
+  --textarea-color: 200,210,214;
+  --textarea-alpha: 0.08;
+  --textarea-alpha-focus: 0.13;
+  --textarea-radius: 22px;
+
+  /* Card hover states — Asuka mauve */
+  --card-color-hover: rgba(104,93,99,0.15);
+  --card-color-select: rgba(104,93,99,0.30);
+
+  /* Buttons */
+  --button-height: 32px;
+  --button-padding: 0 16px;
+  --button-radius: 16px;
+
+  /* Scrollbar — Asuka */
+  --scrollbar-thin-thumb: rgb(158,127,143);
+  --scrollbar-thin-track: transparent;
+  --scrollbar-auto-thumb: rgb(158,127,143);
+  --scrollbar-auto-track: transparent;
+
+  /* Floating panels (popouts, tooltips, context menus) need a real backing
+     or they're unreadable over a transparent app. Frosted dark tint. */
+  --background-floating: rgba(20,16,18,0.85) !important;
+
+  /* Typography. JetBrains Mono assumed installed (pacman: ttf-jetbrains-mono).
+     Swap for whatever your kitty config uses; falls back to generic mono. */
+  --font-primary: 'Source Han Sans', sans-serif;
+  --font-display: 'Source Han Sans', sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+}
+
+/* ── Links ───────────────────────────────────────────────────────────────────
+   #C8D2D6 washed out over bright backgrounds. Anchor links to a warmer, more
+   saturated tone drawn from Asuka's scrollbar mauve (158,127,143), brightened
+   for contrast, with a text-shadow so they stay legible over any wallpaper or
+   background image without needing an opaque backing. */
+a,
+a:visited {
+  color: #E8A9C0 !important;            /* brightened Asuka mauve-rose */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7) !important;
+}
+a:hover {
+  color: #F4C4D6 !important;
+  text-decoration: underline !important;
+}
+
+/* The message textarea sits over the transparent input bar. Links typed there
+   (pre-send) inherit muted styling and a faint underline; give them the same
+   treatment plus a readable underline so a pasted URL is clearly visible. */
+[class*="slateTextArea"] a,
+[class*="channelTextArea"] a,
+[class*="textArea"] [class*="link"] {
+  color: #E8A9C0 !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7) !important;
+  text-decoration: underline !important;
+  text-decoration-color: rgba(232,169,192,0.6) !important;
+}
+
+/* ── Popout / modal panels — frosted tint for legibility over transparency ── */
+[class*="popout"],
+[class*="modal"] {
+  background: rgba(20,16,18,0.85) !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────
+   Webkit fallback. Width var isn't exposed by Translucence, so this stays. */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(158,127,143);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Suppress update notices, matching Asuka ─────────────────────────────── */
+[class*="updateNotice"] {
+  display: none !important;
+}
+
+/* ── CRT scanline overlay ────────────────────────────────────────────────────
+   Faint horizontal scanlines across the whole app. Non-interactive, sits above
+   content but ignores clicks. Tune the alpha in the gradient (0.04) for
+   strength; raise toward 0.08 for a heavier CRT feel, drop to 0.02 for barely
+   there. Line spacing is the 3px in the gradient stops. Delete this block to
+   remove entirely. */
+#app-mount::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.04) 0px,
+    rgba(0,0,0,0.04) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}

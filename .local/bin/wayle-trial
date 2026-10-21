@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Kept for muscle memory -- the real thing is bar-switch (restore survives terminal/app exit).
+exec "$HOME/.local/bin/bar-switch" "${1:-wayle}"

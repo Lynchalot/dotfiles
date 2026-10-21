@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+# bar-switch -- flip between HyDE's waybar+swaync and wayle, and always be able to come back.
+#
+#   bar-switch wayle [profile]   stop waybar + swaync, run wayle as a systemd user service
+#   bar-switch profile [name]    list wayle config profiles / swap one in (hot-reloads)
+#   bar-switch waybar    stop wayle, bring waybar + swaync back exactly as HyDE starts them
+#   bar-switch toggle    whichever one isn't running
+#   bar-switch status    who owns the bar / notifications right now
+#
+# Why this is hard to get stuck in:
+#   * wayle runs as the transient unit wayle-trial.service, NOT in a terminal, so closing a
+#     terminal or quitting an app doesn't kill it half-way through a restore.
+#   * that unit has ExecStopPost=bar-switch _restore, so whenever wayle stops -- clean exit,
+#     crash, kill -9, `systemctl stop` -- waybar and swaync are started again automatically.
+#   * wayle.service (the packaged unit) is disabled, so login/reboot always gives waybar.
+#   * _restore is idempotent and only starts what is missing; it never touches hyprsunset's
+#     state (HyDE owns that) beyond starting its daemon if none is running.
+#
+# Restore commands mirror HyDE's own startup (~/.local/share/hypr/lua/variables.lua):
+#   bar           -> `hyde-shell waybar --watch`  (systemd-run unit, Restart=always)
+#   notifications -> hyde-shell app -u hyde-<desktop>-notifications.service -- swaync
+#                    (the override in ~/.config/hypr/hyprland.lua picks swaync over dunst)
+
+set -u
+
+export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:$PATH"
+export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-Hyprland}"
+
+SELF="$HOME/.local/bin/bar-switch"
+DESK="$XDG_SESSION_DESKTOP"
+BAR_UNIT="hyde-${DESK}-bar.service"
+NOTIF_UNIT="hyde-${DESK}-notifications.service"
+SUNSET_UNIT="hyde-${DESK}-blue-light-filter.service"
+WAYLE_UNIT="wayle-trial.service"
+
+say() { printf '[bar-switch] %s\n' "$*" >&2; }
+is_active() { systemctl --user is-active --quiet "$1"; }
+notif_owned() { busctl --user list --no-legend 2>/dev/null | grep -q '^org\.freedesktop\.Notifications '; }
+notif_owner() { busctl --user list --no-legend 2>/dev/null | awk '$1 == "org.freedesktop.Notifications" { print $3 }'; }
+
+# "Is it running?" is judged by process, not unit name: swaync can also be running under the
+# packaged swaync.service (D-Bus activation starts it when a notification arrives while the
+# name is free), and a unit-name check would then start a second, doomed copy.
+# `-f` with an anchored path skips <defunct> children, which have an empty cmdline.
+proc_running() { pgrep -f "^/usr/bin/$1( |\$)" >/dev/null; }
+
+# systemctl aborts the WHOLE `stop A B` if B isn't loaded, leaving A running -- so one at a time.
+stop_unit() { systemctl --user stop "$1" 2>/dev/null || true; }
+
+wait_notif_free() { # up to ~3s for the Notifications bus name to be released
+    local i
+    for i in 1 2 3 4 5 6; do
+        notif_owned || return 0
+        sleep 0.5
+    done
+    return 1
+}
+
+# Idempotent: start whatever of waybar / swaync / hyprsunset is missing. Safe to run any time.
+restore() {
+    if ! is_active "$BAR_UNIT" && ! proc_running waybar; then
+        say "starting waybar"
+        hyde-shell waybar --watch
+    fi
+
+    if ! is_active "$NOTIF_UNIT" && ! proc_running swaync; then
+        wait_notif_free || say "warning: something still owns org.freedesktop.Notifications"
+        say "starting swaync"
+        hyde-shell app -u "$NOTIF_UNIT" -t service -- swaync
+    fi
+
+    # HyDE's night-light daemon. Only started if nothing is running; its state file is not touched.
+    if ! pgrep -x hyprsunset >/dev/null; then
+        say "starting hyprsunset (HyDE daemon)"
+        hyde-shell app -u "$SUNSET_UNIT" -t service -- hyprsunset
+    fi
+}
+
+start_wayle() {
+    if is_active "$WAYLE_UNIT"; then
+        say "wayle is already running"
+        return 0
+    fi
+    if ! command -v wayle >/dev/null; then
+        say "wayle isn't installed"
+        return 1
+    fi
+
+    say "stopping waybar + swaync"
+    stop_unit "$BAR_UNIT"
+    stop_unit "$NOTIF_UNIT"
+    stop_unit swaync.service # packaged unit; D-Bus activation may have started swaync under it
+    pkill -f '^/usr/bin/waybar( |$)' 2>/dev/null || true
+    pkill -f '^/usr/bin/swaync( |$)' 2>/dev/null || true
+    wait_notif_free || say "warning: something still owns org.freedesktop.Notifications"
+
+    say "starting wayle"
+    if ! systemd-run --user --quiet --collect --unit="${WAYLE_UNIT%.service}" \
+        --slice=app-graphical.slice \
+        --property=Type=exec \
+        --property=ExecStopPost="$SELF _restore" \
+        -- wayle shell; then
+        say "failed to start wayle -- restoring waybar"
+        restore
+        return 1
+    fi
+
+    sleep 3
+    if ! is_active "$WAYLE_UNIT"; then
+        say "wayle exited right after starting -- waybar/swaync restored by its stop hook"
+        return 1
+    fi
+    if [ "$(notif_owner)" != "wayle" ]; then
+        say "warning: wayle is up but '$(notif_owner)' owns notifications (D-Bus re-activated it?)"
+    fi
+    say "wayle is up. Switch back any time with:  bar-switch waybar"
+}
+
+stop_wayle() {
+    if is_active "$WAYLE_UNIT"; then
+        say "stopping wayle (its stop hook brings waybar + swaync back)"
+        systemctl --user stop "$WAYLE_UNIT"
+    fi
+    # Belt and braces: covers a wayle started by hand (`wayle shell`), or a hook that raced.
+    pkill -x wayle 2>/dev/null && sleep 1
+    restore
+}
+
+# Wayle config profiles: ~/.config/wayle/profiles/<name>.toml are swapped into config.toml
+# (wayle hot-reloads it). The config being replaced is saved to profiles/_previous.toml first.
+PROFILES="$HOME/.config/wayle/profiles"
+CONFIG="$HOME/.config/wayle/config.toml"
+
+list_profiles() {
+    local f
+    for f in "$PROFILES"/*.toml; do
+        [ -e "$f" ] || continue
+        f=${f##*/}
+        case "$f" in _*) continue ;; esac
+        if cmp -s "$PROFILES/$f" "$CONFIG"; then printf '* %s  (active)\n' "${f%.toml}"; else printf '  %s\n' "${f%.toml}"; fi
+    done
+}
+
+apply_profile() {
+    local name="$1"
+    if [ ! -f "$PROFILES/$name.toml" ]; then
+        say "no such profile: $name"
+        list_profiles >&2
+        return 1
+    fi
+    cmp -s "$PROFILES/$name.toml" "$CONFIG" && { say "profile '$name' is already active"; return 0; }
+    [ -f "$CONFIG" ] && cp "$CONFIG" "$PROFILES/_previous.toml"
+    cp "$PROFILES/$name.toml" "$CONFIG"
+    say "wayle profile -> $name (previous config saved as profiles/_previous.toml)"
+}
+
+status() {
+    local layers notif
+    layers=$(hyprctl layers 2>/dev/null | grep -o 'namespace: \(waybar\|wayle-bar[^,]*\)' | sed 's/namespace: //' | sort -u | tr '\n' ' ')
+    notif=$(notif_owner)
+    printf 'bar on screen : %s\n' "${layers:-none}"
+    printf 'notifications : %s\n' "${notif:-nobody}"
+    printf 'wayle service : %s\n' "$(systemctl --user is-active "$WAYLE_UNIT" 2>/dev/null)"
+    printf 'waybar unit   : %s\n' "$(systemctl --user is-active "$BAR_UNIT" 2>/dev/null)"
+}
+
+case "${1:-status}" in
+wayle)
+    if [ -n "${2:-}" ]; then apply_profile "$2" || exit 1; fi
+    start_wayle
+    ;;
+profile)
+    if [ -n "${2:-}" ]; then apply_profile "$2"; else list_profiles; fi
+    ;;
+waybar) stop_wayle && status ;;
+toggle) if is_active "$WAYLE_UNIT"; then stop_wayle && status; else start_wayle; fi ;;
+status) status ;;
+_restore) restore ;; # internal: wayle-trial.service's ExecStopPost
+*)
+    echo "usage: ${0##*/} {wayle [profile]|waybar|toggle|status|profile [name]}" >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,223 @@
+/**
+ * @name crt-sh2
+ * @description Midnight layout base with full Translucence-style transparency, Asuka colour identity, and Silent Hill 2 CRT aesthetic.
+ * @version 4.1.1
+ * @base Midnight by refact0r
+*/
+
+@import url('https://refact0r.github.io/midnight-discord/build/midnight.css');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Gelasio:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* ── Midnight layout config ────────────────────────────────────────────────── */
+body {
+    --font: 'Jost';
+    --code-font: 'JetBrains Mono';
+    font-weight: 400;
+
+    --gap: 12px;
+    --divider-thickness: 2px;
+    --border-thickness: 1px;
+
+    --animations: on;
+    --list-item-transition: 0.2s ease;
+    --dms-icon-svg-transition: 0.4s ease;
+    --border-hover-transition: 0.2s ease;
+
+    --top-bar-height: var(--gap);
+    --top-bar-button-position: titlebar;
+    --top-bar-title-position: off;
+    --subtle-top-bar-title: off;
+
+    --custom-window-controls: on;
+    --window-control-size: 14px;
+
+    --custom-dms-icon: off;
+
+    /* Full transparency — all panels see-through, wallpaper shows everywhere.
+       Same approach as Translucence/asuka-translucence. */
+    --transparency-tweaks: on;
+    --remove-bg-layer: on;
+    --panel-blur: on;
+    --blur-amount: 2px;             /* match Asuka's 2px background blur */
+    --bg-floating: rgba(20,16,18,0.88); /* popouts/tooltips need a real backing */
+
+    --background-image: off;
+    --custom-chatbar: off;
+    --chatbar-height: 47px;
+    --small-user-panel: on;
+}
+
+/* ── Colour palette — fully transparent panels, Asuka identity ──────────────
+   All bg values are rgba(0,0,0,0) so every panel is completely transparent,
+   identical to Translucence. The Asuka palette applies to text, accents,
+   hover states, and interactive elements only. */
+:root {
+    --colors: on;
+
+    /* text — boosted contrast across the board. text-1 is near-pure white,
+       text-2 and text-3 pushed lighter so they read clearly over the wallpaper. */
+    --text-0: rgba(20,16,18,1);
+    --text-1: hsl(205, 20%, 97%);      /* near-white, boosted from 92% */
+    --text-2: hsl(205, 18%, 88%);      /* headings/important, up from 76% */
+    --text-3: hsl(205, 14%, 78%);      /* normal text, up from 62% */
+    --text-4: hsl(340, 10%, 58%);      /* muted, up from 45% */
+    --text-5: hsl(340, 10%, 38%);      /* very muted, up from 28% */
+    /* backgrounds — fully transparent, same as Translucence */
+    --bg-1: rgba(0,0,0,0);
+    --bg-2: rgba(0,0,0,0);
+    --bg-3: rgba(0,0,0,0);
+    --bg-4: rgba(0,0,0,0);
+
+    /* hover/active — Asuka's background-modifier values */
+    --hover:    rgba(200,210,214,0.07);
+    --active:   rgba(200,210,214,0.14);
+    --active-2: rgba(200,210,214,0.22);
+
+    /* message hover — faint amber, SH2 menu selection feel */
+    --message-hover: hsla(35, 40%, 55%, 0.09);
+
+    /* floating panels get a real dark backing so they're readable */
+    --bg-floating: rgba(20,16,18,0.88);
+
+    /* accent — Asuka mauve-rose */
+    --accent-1: hsl(343, 35%, 75%);
+    --accent-2: hsl(343, 30%, 65%);
+    --accent-3: hsl(343, 25%, 55%);
+    --accent-4: hsl(343, 22%, 48%);
+    --accent-5: hsl(343, 20%, 40%);
+    --accent-new: var(--accent-2);
+
+    --mention: linear-gradient(to right, color-mix(in hsl, var(--accent-2), transparent 85%) 40%, transparent);
+    --mention-hover: linear-gradient(to right, color-mix(in hsl, var(--accent-2), transparent 90%) 40%, transparent);
+    --reply: linear-gradient(to right, hsla(35, 30%, 50%, 0.10) 40%, transparent);
+    --reply-hover: linear-gradient(to right, hsla(35, 30%, 50%, 0.16) 40%, transparent);
+
+    --online: var(--green-2);
+    --dnd: var(--red-2);
+    --idle: var(--yellow-2);
+    --streaming: var(--purple-2);
+    --offline: var(--text-4);
+
+    --border-light: rgba(200,210,214,0.07);
+    --border: rgba(200,210,214,0.14);
+    --border-hover: rgba(200,210,214,0.20);
+    --button-border: rgba(200,210,214,0.10);
+
+    --red-1: oklch(75% 0.12 5);
+    --red-2: oklch(70% 0.12 5);
+    --red-3: oklch(65% 0.12 5);
+    --red-4: oklch(60% 0.12 5);
+    --red-5: oklch(55% 0.12 5);
+
+    --green-1: oklch(75% 0.10 165);
+    --green-2: oklch(70% 0.10 165);
+    --green-3: oklch(65% 0.10 165);
+    --green-4: oklch(60% 0.10 165);
+    --green-5: oklch(55% 0.10 160);
+
+    --blue-1: oklch(75% 0.08 210);
+    --blue-2: oklch(70% 0.08 210);
+    --blue-3: oklch(65% 0.08 210);
+    --blue-4: oklch(60% 0.08 210);
+    --blue-5: oklch(55% 0.08 210);
+
+    --yellow-1: oklch(80% 0.11 90);
+    --yellow-2: oklch(75% 0.11 90);
+    --yellow-3: oklch(70% 0.11 90);
+    --yellow-4: oklch(65% 0.11 90);
+    --yellow-5: oklch(60% 0.11 90);
+
+    --purple-1: oklch(75% 0.10 330);
+    --purple-2: oklch(70% 0.10 330);
+    --purple-3: oklch(65% 0.10 330);
+    --purple-4: oklch(60% 0.10 330);
+    --purple-5: oklch(55% 0.10 330);
+}
+
+/* ── Legibility scrim behind messages only ─────────────────────────────────
+   Matches Translucence's --message-color: rgba(0,0,0,0.25). Raises the
+   alpha if your wallpaper is bright or busy. */
+[class*="messagesWrapper"],
+[class*="chatContent"] {
+    background: rgba(0,0,0,0.20) !important;
+}
+
+/* ── Scrollbar — Asuka mauve ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgb(158,127,143); border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ── Links — Asuka mauve-rose ─────────────────────────────────────────────── */
+a, a:visited {
+    color: #E8A9C0 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7) !important;
+}
+a:hover {
+    color: #F4C4D6 !important;
+    text-decoration: underline !important;
+}
+
+/* ── Message input text ────────────────────────────────────────────────────── */
+[role="textbox"], [role="textbox"] * {
+    color: #ECECEC !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.7) !important;
+}
+
+/* ── SH2 serif accent — atmospheric text only ─────────────────────────────── */
+/* Gelasio on channel topics and bios only. Usernames stay in Jost. */
+[class*="topic"],
+[class*="userBio"] {
+    font-family: 'Gelasio', serif !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* ── Reply preview: flat block, no pill ──────────────────────────────────── */
+[class*="repliedMessage"],
+[class*="repliedTextPreview"] {
+    border-radius: 0 !important;
+    background: none !important;
+    padding: 0 !important;
+    margin-left: 0 !important;
+    box-shadow: none !important;
+}
+
+/* ── CRT: scanlines + aperture-grille RGB tint ────────────────────────────── */
+/* Tune: 0.04 = scanline strength, 3px = pitch (try 4px if moiré on ultrawide) */
+#app-mount::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.04) 0px,
+            rgba(0,0,0,0.04) 1px,
+            transparent 1px,
+            transparent 3px
+        ),
+        repeating-linear-gradient(
+            to right,
+            rgba(255,0,0,0.015) 0px,
+            rgba(255,0,0,0.015) 1px,
+            rgba(0,255,0,0.015) 1px,
+            rgba(0,255,0,0.015) 2px,
+            rgba(0,0,255,0.015) 2px,
+            rgba(0,0,255,0.015) 3px
+        );
+}
+
+/* ── Vignette ─────────────────────────────────────────────────────────────── */
+#app-mount::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 55%,
+        rgba(0,0,0,0.35) 100%
+    );
+}
