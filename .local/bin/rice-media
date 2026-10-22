@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# rice-media: playerctl, aimed at the right player.
+#   rice-media pick                print the MPRIS player media keys should control
+#   rice-media <playerctl args>    run playerctl against it (play-pause, next, previous, position 5+ ...)
+#
+# Plain playerctl takes the first player in its list, so a paused browser tab can beat a
+# playing Spotify. Rule here (from github.com/electrocrem/gits, gits-media):
+#   1. a player that is Playing wins (and is remembered as the last one used)
+#   2. with nothing playing, the last player that was playing, if it still exists
+#   3. otherwise the first non-stopped player, else the first one listed
+state=${XDG_STATE_HOME:-$HOME/.local/state}/rice-media
+
+pick() {
+    local players p st first="" last
+    mapfile -t players < <(playerctl -l 2>/dev/null)
+    ((${#players[@]})) || return 1
+    for p in "${players[@]}"; do
+        st=$(playerctl -p "$p" status 2>/dev/null)
+        if [[ $st == Playing ]]; then
+            mkdir -p "$state" && echo "$p" >"$state/last"
+            echo "$p"
+            return 0
+        fi
+        [[ -n $st && $st != Stopped && -z $first ]] && first=$p
+    done
+    last=$(cat "$state/last" 2>/dev/null)
+    for p in "${players[@]}"; do
+        [[ $p == "$last" ]] && { echo "$p"; return 0; }
+    done
+    echo "${first:-${players[0]}}"
+}
+
+if [[ ${1:-} == pick ]]; then
+    pick
+    exit
+fi
+p=$(pick) || exit 1
+# remember a player the moment it's started from a key, so the next press finds it again
+[[ ${1:-} == play || ${1:-} == play-pause ]] && mkdir -p "$state" && echo "$p" >"$state/last"
+exec playerctl -p "$p" "$@"

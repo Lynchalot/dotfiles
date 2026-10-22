@@ -189,3 +189,6 @@ textbox {
     vertical-align:              0.5;
     horizontal-align:            0.5;
 }
+
+/* Per-profile launcher text fonts written by ~/.local/bin/rice-font (loaded last so it wins) */
+@import "~/.config/rofi/rice-font.rasi"

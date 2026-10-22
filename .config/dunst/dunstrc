@@ -110,7 +110,7 @@ new_icon = skype
 # [notification]
 # font = "mononoki Nerd Font"
 # font_size = 10
-font = Cantarell 10,JetBrainsMono Nerd Font 10
+font = Sarasa UI J Nerd Font 10 10,JetBrainsMono Nerd Font 10
 
 dmenu = /usr/bin/rofi -config notification -dmenu -p dunst:
 
@@ -120,15 +120,15 @@ dmenu = /usr/bin/rofi -config notification -dmenu -p dunst:
 
 
 [urgency_low]
-    background = "#658AA380"
-    foreground = "#CCEBFFE6"
-    frame_color = "#658AA303"
+    background = "#7FA36580"
+    foreground = "#E1FFCCE6"
+    frame_color = "#7FA36503"
     icon = "/home/Lynchalot/.local/share/icons/Wallbash-Icon/hyprdots.svg"
     timeout = 5
 
 [urgency_normal]
-    background = "#4E6B3A80"
-    foreground = "#E1FFCCE6"
-    frame_color = "#4E6B3A03"
+    background = "#3C3A6B80"
+    foreground = "#CECCFFE6"
+    frame_color = "#3C3A6B03"
     icon = "/home/Lynchalot/.local/share/icons/Wallbash-Icon/hyprdots.svg"
     timeout = 5

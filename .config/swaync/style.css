@@ -568,7 +568,7 @@ notificationwindow, blankwindow, blankwindow {
 /* ============================================================ */
 
 * {
-    font-family: "Sarasa Fixed J Nerd Font", "JetBrainsMono Nerd Font", sans-serif;
+    font-family: "Nunito", "Sarasa UI J Nerd Font", sans-serif; /* rice-font */
     font-size: 14px;
 }
 
@@ -809,4 +809,24 @@ notificationwindow, blankwindow, blankwindow {
 .notification-row .notification-background .notification .notification-default-action .notification-content .inline-reply .inline-reply-button:hover {
     background: @wallbash_1xa7;
     color: @wallbash_pry1;
+}
+
+/* See-through notification cards (75%) so the wallpaper shows through, like the
+   waybar pills. Only the card itself is tinted; the frame and the clickable layer
+   inside it are transparent, otherwise the stacked layers add up to near-opaque. */
+.notification-row .notification-background,
+.notification-row .notification-background:hover,
+.notification-row:focus .notification-background,
+.notification-row .notification-background .notification .notification-default-action,
+.notification-row .notification-background .notification .notification-default-action:hover {
+    background: transparent;
+}
+.notification-row .notification-background .notification,
+.notification-group.collapsed .notification-row .notification {
+    background: alpha(@wallbash_pry1, 0.75);
+}
+.notification-row .notification-background:hover .notification,
+.notification-row:focus .notification-background .notification,
+.notification-group.collapsed:hover .notification-row:not(:only-child) .notification {
+    background: alpha(@wallbash_1xa1, 0.8);
 }

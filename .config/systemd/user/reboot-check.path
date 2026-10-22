@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch for package updates that need a reboot (kernel, NVIDIA driver)
+
+[Path]
+# pacman appends to its log on every transaction
+PathModified=/var/log/pacman.log
+Unit=reboot-check.service
+
+[Install]
+WantedBy=default.target

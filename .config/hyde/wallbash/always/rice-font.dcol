@@ -1,0 +1,3 @@
+${cacheDir}/rice-font.hook|${HOME}/.local/bin/rice-font --theme
+# Written by wallbash on every theme/wallpaper change; the command after "|" applies
+# the font profile mapped to the new theme in ~/.config/hyde/rice-fonts.conf.

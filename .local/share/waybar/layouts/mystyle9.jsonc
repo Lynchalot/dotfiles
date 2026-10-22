@@ -45,10 +45,10 @@
             "click-to-reveal": false
         },
         "modules": [
+            "custom/gpuinfo#nvidia",
             "cpu",
             "temperature",
-            "memory",
-            "custom/gpuinfo#nvidia"
+            "memory"
         ]
     },
     "modules-center": [
@@ -90,6 +90,7 @@
             "custom/caffeine-badge",
             "custom/hyprsunset-badge",
             "group/tools",
+            "custom/hyde-menu",
             "group/power"
         ]
     },
@@ -260,7 +261,7 @@
         "tooltip": true
     },
     "clock": {
-        "format": "{:%I:%M %p}",
+        "format": "{:%I:%M %p %a}",
         "tooltip-format": "<span font_size='10pt' weight='bold'>{:%A %d %B}</span>\n<tt><span font_size='9pt'>{calendar}</span></tt>"
     },
     "cpu": {
@@ -343,7 +344,7 @@
         ]
     },
     "clock#date": {
-        "format": "{:%a %d %b}",
+        "format": "{:%d %b}",
         "interval": 60,
         "tooltip": true,
         "tooltip-format": "<span font_size='10pt' weight='bold'>{:%A %d %B}</span>\n<tt><span font_size='9pt'>{calendar}</span></tt>",
@@ -396,5 +397,10 @@
         "tooltip": true,
         "tooltip-format": "Night light is on. Click to turn off.",
         "on-click": "hyde-shell hyprsunset -t -P waybar:19"
+    },
+    "custom/hyde-menu": {
+        "format": "<span face='Material Symbols Rounded' font_size='11.5pt' rise='-2.5pt'>tune</span>",
+        "menu": "on-click",
+        "tooltip-format": "HyDE settings: themes, wallpaper, waybar, lockscreen…"
     }
 }

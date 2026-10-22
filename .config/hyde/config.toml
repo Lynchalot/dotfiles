@@ -15,14 +15,14 @@ font_size = 10
 #font = "M PLUS 1 Code Medium"
 #font = "Monofur Nerd Font Regular"
 #font = "Mononoki Nerd Font Regular"
-font = "Sarasa Fixed J Nerd Font Regular"
+font = "Maple Mono"
 scale = 11
 icon_size = 10
 
 [Rofi]
 #font = "SFProJPDisplay-Regular"
 #font = "Sarasa Fixed J Nerd Font Regular"
-font = "M PLUS 2 Medium"
+font = "Nunito"
 #font = "Source Han Sans JP"
 #font = "Zen Kaku Gothic Antique Medium"
 #scale = 10
@@ -32,7 +32,7 @@ font_size = 12
 font = "Source Han Sans JP"
 
 [wallpaper]
-    backend = "mpvpaper" # Should be installed 
+    backend = "hybrid" # awww for images, mpvpaper for videos (~/.local/bin/wallpaper.hybrid.sh) 
     custom_paths = [
         "$XDG_VIDEOS_DIR/Wallpapers",
     ] # List of paths to search for wallpapers

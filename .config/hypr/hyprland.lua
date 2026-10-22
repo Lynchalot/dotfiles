@@ -159,9 +159,16 @@ hl.window_rule({
 -- Setting it here rather than editing variables.lua keeps it through HyDE updates.
 -- NOTE: the [hyprland-start] notifications key in ~/.config/hyde/config.toml is inert
 -- under the Lua config -- config.lua lists "hyprland-start" as an ignored key.
+-- 2026-10-22: start swaync through its packaged swaync.service rather than a HyDE
+-- transient unit. D-Bus also starts swaync.service whenever an app notifies before the
+-- daemon is up (org.erikreider.swaync.service has SystemdService=swaync.service), so with
+-- two different units the second one exited "already running", retried 5x and sat
+-- failed after nearly every login. One unit = one owner; systemd coalesces the starts.
+-- The unit has ConditionEnvironment=WAYLAND_DISPLAY, and HyDE imports the environment into
+-- systemd in this same startup burst, so wait (max 10 s) for that before starting it.
 hyde.config.start.notifications =
-    "hyde-shell app -u hyde-" ..
-    (os.getenv("XDG_SESSION_DESKTOP") or "Hyprland") .. "-notifications.service -t service -- swaync"
+    "sh -c 'for i in $(seq 50); do systemctl --user show-environment | grep -q ^WAYLAND_DISPLAY= && break; sleep 0.2; done; " ..
+    "systemctl --user reset-failed swaync.service; systemctl --user start swaync.service'"
 
 hl.on(
     "hyprland.start",
@@ -241,36 +248,82 @@ hl.bind(
     _F
 )
 
+hl.unbind(MOD .. " + K")
+_F = {description = "[Launcher|Apps] krita"}
+hl.bind(MOD .. " + K", hl.dsp.exec_cmd("krita"), _F)
 _F = {description = "[Launcher|Apps] notification center"}
 hl.bind(MOD .. " + N", hl.dsp.exec_cmd("swaync-client -t"), _F)
 _F = {description = "[Utilities] system update"}
 -- `systemupdate.sh` is retired by the v26.7.4 migration; system.update.py replaces it.
 hl.bind(MOD .. " + U", hl.dsp.exec_cmd("hyde-shell system.update up"), _F)
 
--- ── Media keys on the nav cluster ──
--- Print / Scroll_Lock / Pause repurposed as transport controls.
-_F = {description = "[Hardware Controls|Media] previous media", locked = true}
-hl.bind("Print", hl.dsp.exec_cmd("playerctl previous"), _F)
+-- ── Game-safe keys (2026-10-22) ──
+-- Nothing fires on a bare F-key, Scroll Lock or Pause, so older Steam games get
+-- them back (F12 is Steam's screenshot key and used to also raise the volume).
+-- Volume lives on Super + F10/F11/F12 and the keyboard's media keys; transport
+-- controls are Super + Ctrl + Z/X/C below. HyDE's versions carry other flags, so
+-- they are unbound explicitly rather than relying on bind dedup.
+hl.unbind("F10")
+hl.unbind("F11")
+hl.unbind("F12")
+hl.unbind("SHIFT + F11")
+_F = {description = "[Hardware Controls|Audio] un/mute output", locked = true}
+hl.bind(MOD .. " + F10", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "m")), _F)
+_F = {description = "[Hardware Controls|Audio] decrease volume", locked = true, repeating = true}
+hl.bind(MOD .. " + F11", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "d")), _F)
+_F = {description = "[Hardware Controls|Audio] increase volume", locked = true, repeating = true}
+hl.bind(MOD .. " + F12", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "i")), _F)
+
+hl.unbind("Print")
+_F = {description = "[Utilities] snip screen"}
+hl.bind("Print", hl.dsp.exec_cmd(hyde.sh.screenshot.snip()), _F)
+
+-- Cycle fullscreen (off -> maximised -> fullscreen), moved off Shift + F11.
+local cycle_fullscreen = function()
+    local active_window = assert(hl.get_active_window(), "No active window to toggle fullscreen")
+    local next_state = ((tonumber(active_window.fullscreen) or 0) + 1) % 3
+    hl.dispatch(hl.dsp.window.fullscreen_state({internal = next_state, client = next_state, window = active_window}))
+end
+_F = {description = "[Window Management] cycle fullscreen"}
+hl.bind(MOD .. " + Return", cycle_fullscreen, _F)
+
+-- ── Rice toggles ──
+_F = {description = "[Utilities] caffeine on/off"}
+hl.bind(MOD .. " + ALT + I", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/caffeine toggle"), _F)
+_F = {description = "[Theming and Wallpaper] night light on/off"}
+hl.bind(MOD .. " + ALT + N", hl.dsp.exec_cmd("hyde-shell hyprsunset -t -P waybar:19"), _F)
+_F = {description = "[Theming and Wallpaper] next font profile"}
+hl.bind(MOD .. " + ALT + F", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-font next"), _F)
+
+-- ── Media keys and transport: always aimed at the player that's actually playing ──
+-- ~/.local/bin/rice-media picks the player (playing wins, else the last one that played),
+-- so a paused browser tab can't steal play/pause from Spotify. HyDE's XF86 binds are
+-- replaced; they carry other flags, so they are unbound explicitly first.
+local MEDIA = os.getenv("HOME") .. "/.local/bin/rice-media"
+for _, k in ipairs({"XF86AudioPlay", "XF86AudioPause", "XF86AudioNext", "XF86AudioPrev"}) do
+    hl.unbind(k)
+end
 _F = {description = "[Hardware Controls|Media] play/pause media", locked = true}
-hl.bind("Scroll_Lock", hl.dsp.exec_cmd("playerctl play-pause"), _F)
-_F = {description = "[Hardware Controls|Media] stop media", locked = true}
-hl.bind("SHIFT + Scroll_Lock", hl.dsp.exec_cmd("playerctl stop"), _F)
+hl.bind("XF86AudioPlay", hl.dsp.exec_cmd(MEDIA .. " play-pause"), _F)
+hl.bind("XF86AudioPause", hl.dsp.exec_cmd(MEDIA .. " play-pause"), _F)
 _F = {description = "[Hardware Controls|Media] next media", locked = true}
-hl.bind("Pause", hl.dsp.exec_cmd("playerctl next"), _F)
+hl.bind("XF86AudioNext", hl.dsp.exec_cmd(MEDIA .. " next"), _F)
+_F = {description = "[Hardware Controls|Media] previous media", locked = true}
+hl.bind("XF86AudioPrev", hl.dsp.exec_cmd(MEDIA .. " previous"), _F)
 
 -- ── Media on the home row ──
 _F = {description = "[Hardware Controls|Media] previous media", locked = true}
-hl.bind(MOD .. " + CONTROL + Z", hl.dsp.exec_cmd("playerctl previous"), _F)
+hl.bind(MOD .. " + CONTROL + Z", hl.dsp.exec_cmd(MEDIA .. " previous"), _F)
 _F = {description = "[Hardware Controls|Media] play/pause media", locked = true}
-hl.bind(MOD .. " + CONTROL + X", hl.dsp.exec_cmd("playerctl play-pause"), _F)
+hl.bind(MOD .. " + CONTROL + X", hl.dsp.exec_cmd(MEDIA .. " play-pause"), _F)
 _F = {description = "[Hardware Controls|Media] next media", locked = true}
-hl.bind(MOD .. " + CONTROL + C", hl.dsp.exec_cmd("playerctl next"), _F)
+hl.bind(MOD .. " + CONTROL + C", hl.dsp.exec_cmd(MEDIA .. " next"), _F)
 _F = {description = "[Hardware Controls|Media] rewind media", locked = true}
-hl.bind(MOD .. " + CONTROL + SHIFT + Z", hl.dsp.exec_cmd("playerctl position 5-"), _F)
+hl.bind(MOD .. " + CONTROL + SHIFT + Z", hl.dsp.exec_cmd(MEDIA .. " position 5-"), _F)
 _F = {description = "[Hardware Controls|Media] stop media", locked = true}
-hl.bind(MOD .. " + CONTROL + SHIFT + X", hl.dsp.exec_cmd("playerctl stop"), _F)
+hl.bind(MOD .. " + CONTROL + SHIFT + X", hl.dsp.exec_cmd(MEDIA .. " stop"), _F)
 _F = {description = "[Hardware Controls|Media] fast-forward media", locked = true}
-hl.bind(MOD .. " + CONTROL + SHIFT + C", hl.dsp.exec_cmd("playerctl position 5+"), _F)
+hl.bind(MOD .. " + CONTROL + SHIFT + C", hl.dsp.exec_cmd(MEDIA .. " position 5+"), _F)
 
 -- ── Screenshots on P, not HyDE's S ──
 _F = {description = "[Utilities] snip screen", locked = true}
@@ -312,3 +365,8 @@ _F = {description = "[Theming and Wallpaper] select animations"}
 hl.bind(MOD .. " + SHIFT + Y", hl.dsp.exec_cmd(hyde.sh.animations("--select")), _F)
 _F = {description = "[Theming and Wallpaper] select hyprlock layout"}
 hl.bind(MOD .. " + SHIFT + U", hl.dsp.exec_cmd(hyde.sh.hyprlock("--select")), _F)
+
+-- ── Automatic game mode: effects off while a fullscreen game is on screen ──
+-- (see ~/.config/hypr/gamemode.lua; pcall so a problem there can never break the config)
+local _gm_ok, _gm_err = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/gamemode.lua")
+if not _gm_ok then hl.exec_cmd("notify-send -a Hyprland \"gamemode.lua failed\" \"" .. tostring(_gm_err):gsub("\"", "") .. "\"") end

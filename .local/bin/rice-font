@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+"""rice-font: switch one UI + one monospace font across the desktop.
+
+  rice-font            show the current profile and the list
+  rice-font a|b|c|d    apply a profile now
+  rice-font next       step to the next profile (Super + Alt + F)
+  rice-font --theme    apply the profile mapped to the current HyDE theme
+                       (run by ~/.config/hyde/wallbash/always/rice-font.dcol on
+                       theme switches; does nothing if the theme hasn't changed)
+
+Profiles: a Sarasa, b Inter + JetBrains Mono, c Nunito + Maple Mono,
+d the original setup (mixed fonts, as before rice-font existed).
+Theme -> profile mapping: ~/.config/hyde/rice-fonts.conf
+
+Touches: GTK (gsettings + gtk-3.0/settings.ini), kitty, waybar (config.toml +
+includes/global.css), rofi (config.toml [Rofi]), swaync (style.css), hyprlock
+(Asuka.conf $fontFamily). Vesktop keeps its own theme fonts.
+"""
+import os, re, subprocess, sys, time
+from pathlib import Path
+
+H = Path.home()
+CFG = H / ".config"
+STATE = H / ".cache/hyde/rice-font.state"
+MAP = CFG / "hyde/rice-fonts.conf"
+
+PROFILES = {
+    "a": dict(name="Sarasa all the way",
+              gtk="Sarasa UI J Nerd Font 10", gtk_mono="Sarasa Fixed J Nerd Font 10",
+              kitty="Sarasa Fixed J Nerd Font", bar="Sarasa Fixed J Nerd Font",
+              rofi="Sarasa UI J Nerd Font", swaync="Sarasa UI J Nerd Font",
+              lock="Sarasa UI J Nerd Font"),
+    "b": dict(name="Inter + JetBrains Mono",
+              gtk="Inter 10", gtk_mono="JetBrainsMono Nerd Font 10",
+              kitty="JetBrainsMono Nerd Font", bar="JetBrainsMono Nerd Font",
+              rofi="Inter", swaync="Inter", lock="Inter",
+              rofi_text=12),  # bigger launcher text, same panel size
+    "c": dict(name="Nunito + Maple Mono",
+              gtk="Nunito 10", gtk_mono="Maple Mono 10",
+              kitty="Maple Mono", bar="Maple Mono",
+              rofi="Nunito", swaync="Nunito", lock="Nunito",
+              rofi_text=12),  # Nunito runs small: bigger launcher text, same panel size
+    # d = what was configured before rice-font (2026-10-22), except the bar font name:
+    # HyDE had "Sarasa Fixed J Nerd Font Regular", which fontconfig resolves to Noto Sans
+    "d": dict(name="Original (mixed)",
+              gtk="Sarasa UI J Nerd Font 10", gtk_mono="CaskaydiaCove Nerd Font Mono 9",
+              kitty="Sarasa Fixed J Nerd Font Regular", bar="Sarasa Fixed J Nerd Font",
+              rofi="M PLUS 2 Medium", lock="IBM Plex Sans",
+              gtk3="Source Han Sans JP 10",
+              swaync='"Sarasa Fixed J Nerd Font", "JetBrainsMono Nerd Font", sans-serif'),
+}
+# Japanese falls back here wherever an app takes a font list
+CJK = "Sarasa UI J Nerd Font"
+
+
+def run(*cmd):
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def edit(path, fn):
+    path = Path(path)
+    if not path.exists():
+        return False
+    old = path.read_text()
+    new = fn(old)
+    if new != old:
+        path.write_text(new)
+    return True
+
+
+def toml_set(text, section, key, value):
+    """Set the first uncommented `key = ...` inside [section] (case-insensitive header)."""
+    lines = text.split("\n")
+    in_sec = False
+    for i, line in enumerate(lines):
+        s = line.strip()
+        if s.startswith("["):
+            in_sec = s.strip("[]").strip().lower() == section.lower()
+            continue
+        if in_sec and re.match(rf"{key}\s*=", s):
+            indent = line[: len(line) - len(line.lstrip())]
+            lines[i] = f'{indent}{key} = {fmt(value)}'
+            return "\n".join(lines)
+    # key missing: add it after the section's last non-blank line
+    start = next((i for i, l in enumerate(lines) if l.strip().strip("[]").strip().lower() == section.lower()), None)
+    if start is None:
+        return text
+    end = start + 1
+    while end < len(lines) and not lines[end].strip().startswith("["):
+        end += 1
+    while end > start + 1 and not lines[end - 1].strip():
+        end -= 1
+    lines.insert(end, f"{key} = {fmt(value)}")
+    return "\n".join(lines)
+
+
+def fmt(value):
+    return str(value) if isinstance(value, int) else f'"{value}"'
+
+
+def apply(key):
+    p = PROFILES[key]
+    # GTK
+    run("gsettings", "set", "org.gnome.desktop.interface", "font-name", p["gtk"])
+    run("gsettings", "set", "org.gnome.desktop.interface", "monospace-font-name", p["gtk_mono"])
+    edit(CFG / "gtk-3.0/settings.ini",
+         lambda t: re.sub(r"(?m)^gtk-font-name=.*$", f"gtk-font-name={p.get('gtk3', p['gtk'])}", t))
+
+    # kitty (live reload via SIGUSR1)
+    edit(CFG / "kitty/kitty.conf",
+         lambda t: re.sub(r"(?m)^font_family\s+.*$", f"font_family {p['kitty']}", t))
+    run("pkill", "-USR1", "-x", "kitty")
+
+    # waybar + rofi via HyDE's config.toml, plus the generated global.css so it's live now
+    edit(CFG / "hyde/config.toml",
+         lambda t: toml_set(toml_set(t, "waybar", "font", p["bar"]), "Rofi", "font", p["rofi"]))
+    edit(CFG / "waybar/includes/global.css",
+         lambda t: re.sub(r'(?m)^(\s*font-family:\s*)"[^"]*"', rf'\1"{p["bar"]}"', t, count=1))
+    # waybar only reloads on writes to style.css and its direct imports; global.css is
+    # imported from inside defaults.css, so rewrite style.css as-is to reload the chain
+    # (a plain `touch` is not enough).
+    style = CFG / "waybar/style.css"
+    if style.exists():
+        style.write_text(style.read_text())
+
+    # rofi text: style_20 sizes the panel in em from the base font, so only the text
+    # widgets get a font here. style_20.rasi imports this file last.
+    if key == "d":
+        rasi = "/* rice-font d: style_20.rasi's own fonts */\n"
+    else:
+        size = p.get("rofi_text")
+        rasi = f'/* rice-font {key} */\nprompt, entry {{ font: "{p["rofi"]} {size or 11}"; }}\n'
+        if size:
+            rasi += f'element-text {{ font: "{p["rofi"]} {size}"; }}\n'
+    (CFG / "rofi").mkdir(parents=True, exist_ok=True)
+    (CFG / "rofi/rice-font.rasi").write_text(rasi)
+
+    # swaync: the font line in our override block (tagged on first run)
+    def sw(t):
+        tagged = re.compile(r"(?m)^(\s*)font-family:.*/\* rice-font \*/$")
+        fam = p["swaync"] if p["swaync"].startswith('"') else f'"{p["swaync"]}", "{CJK}", sans-serif'
+        line = f'font-family: {fam}; /* rice-font */'
+        if tagged.search(t):
+            return tagged.sub(lambda m: m.group(1) + line, t, count=1)
+        i = t.find("Ricing override")
+        m = re.compile(r"(?m)^(\s*)font-family:.*;$").search(t, i if i >= 0 else 0)
+        return t[: m.start()] + m.group(1) + line + t[m.end():] if m else t
+    edit(CFG / "swaync/style.css", sw)
+    run("swaync-client", "-rs")
+
+    # hyprlock (applies next time the screen locks)
+    for layout in ("Asuka.conf", "NERV.conf"):
+        edit(CFG / "hypr/hyprlock" / layout,
+             lambda t: re.sub(r"(?m)^\$fontFamily\s*=.*$", f"$fontFamily = {p['lock']}", t))
+
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    STATE.write_text(f"profile={key}\ntheme={current_theme()}\n")
+    run("notify-send", "-a", "rice-font", "-t", "2500", f"Fonts: {key.upper()} · {p['name']}")
+
+
+def read_state():
+    st = {}
+    if STATE.exists():
+        for line in STATE.read_text().splitlines():
+            if "=" in line:
+                k, v = line.split("=", 1)
+                st[k.strip()] = v.strip()
+    return st
+
+
+def current_theme():
+    t = os.environ.get("HYDE_THEME")
+    if t:
+        return t
+    rc = H / ".local/state/hyde/staterc"
+    if rc.exists():
+        m = re.search(r'(?m)^HYDE_THEME="?([^"\n]*)"?', rc.read_text())
+        if m:
+            return m.group(1)
+    return ""
+
+
+def theme_profile(theme):
+    mapping, default = {}, "d"
+    if MAP.exists():
+        for line in MAP.read_text().splitlines():
+            line = line.split("#", 1)[0].strip()
+            if "=" in line:
+                k, v = (x.strip() for x in line.rsplit("=", 1))
+                if v in PROFILES:
+                    if k == "default":
+                        default = v
+                    else:
+                        mapping[k] = v
+    return mapping.get(theme, default)
+
+
+def main():
+    args = sys.argv[1:]
+    if not args:
+        st = read_state()
+        cur = st.get("profile", "?")
+        print(f"current: {cur}  (theme: {current_theme()})")
+        for k, p in PROFILES.items():
+            print(f"  {'*' if k == cur else ' '} {k}  {p['name']}")
+        return
+    if args[0] == "--theme":
+        theme = current_theme()
+        if read_state().get("theme") == theme:
+            return  # wallpaper change within the same theme: keep whatever is active
+        time.sleep(3)  # let HyDE finish its own theme-switch writes first
+        apply(theme_profile(theme))
+        return
+    key = args[0].lower()
+    if key == "next":  # cycle a -> b -> c -> d -> a (Super + Alt + F)
+        order = list(PROFILES)
+        cur = read_state().get("profile", order[-1])
+        key = order[(order.index(cur) + 1) % len(order)] if cur in order else order[0]
+    if key not in PROFILES:
+        sys.exit(f"unknown profile '{args[0]}'. Use a, b, c or d.")
+    apply(key)
+
+
+if __name__ == "__main__":
+    main()

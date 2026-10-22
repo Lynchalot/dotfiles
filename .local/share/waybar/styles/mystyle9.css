@@ -11,7 +11,7 @@ window#waybar * {
 
 /* Clickable things and drawer triggers: same-sized buttons with an inset hover */
 window#waybar.top #clock:not(.date),
-window#waybar.top #cpu,
+window#waybar.top #custom-gpuinfo,
 window#waybar.top #pulseaudio,
 window#waybar.top #custom-weather,
 window#waybar.top #custom-swaync,
@@ -25,6 +25,7 @@ window#waybar.top #custom-hyprsunset,
 window#waybar.top #custom-caffeine,
 window#waybar.top #custom-caffeine-badge,
 window#waybar.top #custom-hyprsunset-badge,
+window#waybar.top #custom-hyde-menu,
 window#waybar.top #custom-powerbtn,
 window#waybar.top #custom-lock,
 window#waybar.top #custom-logout,
@@ -36,7 +37,7 @@ window#waybar.top #custom-reboot {
 }
 
 window#waybar.top #clock:not(.date):hover,
-window#waybar.top #cpu:hover,
+window#waybar.top #custom-gpuinfo:hover,
 window#waybar.top #pulseaudio:hover,
 window#waybar.top #custom-weather:hover,
 window#waybar.top #custom-swaync:hover,
@@ -48,6 +49,7 @@ window#waybar.top #custom-rec:hover,
 window#waybar.top #custom-wallchange:hover,
 window#waybar.top #custom-hyprsunset:hover,
 window#waybar.top #custom-caffeine:hover,
+window#waybar.top #custom-hyde-menu:hover,
 window#waybar.top #custom-powerbtn:hover,
 window#waybar.top #custom-lock:hover,
 window#waybar.top #custom-logout:hover,
@@ -96,4 +98,16 @@ window#waybar.top #custom-hyprsunset-badge {
 /* Dropdown menus (power, volume): same 12px text as the bar */
 menu label {
     font-size: 12px;
+}
+
+/* Darker pills so text stands out (theme colour shaded to 45%).
+   Keeps the theme's own transparency (@main-bg is 0.8 opaque); only the shade is darker.
+   Derived from the theme's @main-bg so it still follows theme switches. */
+window#waybar #pill {
+    background-color: shade(@main-bg, 0.45);
+    border-color: shade(@main-bg, 0.45);
+}
+tooltip,
+menu {
+    background-color: alpha(shade(@main-bg, 0.45), 1.1);
 }

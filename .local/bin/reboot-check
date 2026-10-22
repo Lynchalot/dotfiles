@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# reboot-check: does an update wait for a reboot? (idea from github.com/electrocrem/gits, gits-reboot-check)
+#   reboot-check            print the reasons, one per line; exit 0 = reboot needed, 1 = not needed
+#   reboot-check --notify   after a pacman update: wait for it to finish, then notify once per boot
+#                           (run by ~/.config/systemd/user/reboot-check.{path,service})
+# Reasons: the running kernel's modules were replaced by an update (new USB/VPN/loop modules won't
+# load), the loaded NVIDIA driver is older than the installed one (games, CUDA and nvidia-smi
+# break), or a package asked for a reboot (/run/reboot-required).
+reasons() {
+    local running loaded inst
+    running=$(uname -r)
+    [[ -d /usr/lib/modules/$running ]] ||
+        echo "Kernel: $running is running, but its modules were replaced by an update"
+    if [[ -r /sys/module/nvidia/version ]]; then
+        loaded=$(</sys/module/nvidia/version)
+        inst=$(pacman -Q nvidia-utils 2>/dev/null | awk '{ sub(/-[0-9]+$/, "", $2); print $2 }')
+        [[ -n $inst && $inst != "$loaded" ]] &&
+            echo "NVIDIA driver: $loaded is loaded, $inst is installed"
+    fi
+    [[ -e /run/reboot-required ]] && echo "A package asked for a reboot"
+    [[ -n ${REBOOT_CHECK_TEST:-} ]] && echo "Test reason (REBOOT_CHECK_TEST is set)"
+    return 0
+}
+
+if [[ ${1:-} != --notify ]]; then
+    out=$(reasons)
+    [[ -n $out ]] || exit 1
+    echo "$out"
+    exit 0
+fi
+
+# --notify: let the pacman transaction finish (the watcher fires on its first log write)
+sleep "${REBOOT_CHECK_DELAY:-30}"
+while pgrep -x pacman >/dev/null; do sleep 5; done
+out=$(reasons)
+[[ -n $out ]] || exit 0
+
+# once per boot, unless the reasons change (e.g. a second update later the same day)
+stamp=${XDG_RUNTIME_DIR:-/tmp}/reboot-check.notified
+sig="$(cat /proc/sys/kernel/random/boot_id) $(md5sum <<<"$out" | cut -c1-12)"
+[[ -f $stamp && $(<"$stamp") == "$sig" ]] && exit 0
+echo "$sig" >"$stamp"
+
+choice=$(notify-send -a "System update" -i system-reboot -u critical \
+    -A reboot="Reboot now" -A later="Later" \
+    "Reboot to finish the update" "$out")
+[[ $choice == reboot ]] && systemctl reboot
+exit 0

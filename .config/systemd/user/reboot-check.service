@@ -1,0 +1,8 @@
+[Unit]
+Description=Notify when an update needs a reboot
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/reboot-check --notify
+# waits for the pacman run to finish and for your answer to the notification
+TimeoutStartSec=infinity
