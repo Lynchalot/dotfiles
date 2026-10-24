@@ -3,6 +3,8 @@ $HOME/.config/hypr/themes/theme.conf|> $HOME/.config/hypr/themes/colors.conf
 
 $GTK_THEME=Kanagawa
 $ICON_THEME = Tela-circle-dracula
+$CURSOR_THEME = Bibata-Modern-Ice
+$CURSOR_SIZE = 24
 $COLOR_SCHEME = prefer-dark
 
 # Optional: The varibles above will be set automatically when the theme is loaded
@@ -11,6 +13,9 @@ $COLOR_SCHEME = prefer-dark
 exec = gsettings set org.gnome.desktop.interface icon-theme $ICON_THEME
 exec = gsettings set org.gnome.desktop.interface gtk-theme $GTK_THEME
 exec = gsettings set org.gnome.desktop.interface color-scheme $COLOR_SCHEME
+exec = gsettings set org.gnome.desktop.interface cursor-theme $CURSOR_THEME
+exec = gsettings set org.gnome.desktop.interface cursor-size $CURSOR_SIZE
+exec = hyprctl setcursor $CURSOR_THEME $CURSOR_SIZE
 exec = gsettings set org.gnome.desktop.interface font-name "Sarasa UI J Nerd Font 10"
 
 general {

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# rice-sddm-wall: the login screen (SDDM, thyx theme) uses the wallpaper you set last.
+# Run by ~/.config/hyde/wallbash/always/rice-sddm-wall.dcol on every wallpaper or theme change.
+# Copies the wallpaper to thyx/backgrounds/current.<ext> (SDDM can't read your home folder)
+# and points Background= in thyx's theme.conf.user at it.
+thyx=/usr/share/sddm/themes/thyx
+conf=$thyx/theme.conf.user
+wall=$(readlink -f "${XDG_CACHE_HOME:-$HOME/.cache}/hyde/wall.set")
+[[ -f $wall && -f $conf && -w $thyx/backgrounds ]] || exit 0
+ext=${wall##*.}
+ext=${ext,,}
+dest=$thyx/backgrounds/current.$ext
+stamp=$thyx/backgrounds/.current-source
+[[ -f $dest && $(cat "$stamp" 2>/dev/null) == "$wall" ]] && exit 0
+cp -f "$wall" "$dest.part" && mv -f "$dest.part" "$dest" || exit 0
+chmod 644 "$dest"
+find "$thyx/backgrounds" -maxdepth 1 -name 'current.*' ! -name "current.$ext" -delete
+sed -i "s|^Background=.*|Background=\"backgrounds/current.$ext\"|" "$conf"
+echo "$wall" >"$stamp"

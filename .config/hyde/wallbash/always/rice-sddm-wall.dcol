@@ -1,0 +1,3 @@
+${cacheDir}/rice-sddm-wall.hook|${HOME}/.local/bin/rice-sddm-wall
+# Written by wallbash on every theme/wallpaper change; the command after "|" copies the
+# current wallpaper to the SDDM login theme (thyx).
