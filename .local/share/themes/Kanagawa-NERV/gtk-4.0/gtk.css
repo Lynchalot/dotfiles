@@ -1,0 +1,60 @@
+/* Kanagawa-NERV for GTK4 / libadwaita apps (Asuka NERV theme) */
+@define-color accent_color #e0947b;
+@define-color accent_bg_color #d27e63;
+@define-color accent_fg_color #11172a;
+@define-color destructive_color #e46876;
+@define-color destructive_bg_color #c34043;
+@define-color destructive_fg_color #f4e6d8;
+@define-color success_color #7a9a72;
+@define-color success_bg_color #5f7e58;
+@define-color warning_color #dca561;
+@define-color warning_bg_color #b8873f;
+@define-color error_color #e46876;
+@define-color error_bg_color #c34043;
+@define-color window_bg_color #141a2c;
+@define-color window_fg_color #dcd7ba;
+@define-color view_bg_color #11172a;
+@define-color view_fg_color #dcd7ba;
+@define-color headerbar_bg_color #0e1324;
+@define-color headerbar_fg_color #e6e1ca;
+@define-color headerbar_border_color alpha(#dc6d4c, 0.45);
+@define-color headerbar_backdrop_color #141a2c;
+@define-color headerbar_shade_color rgba(0, 0, 0, 0.36);
+@define-color sidebar_bg_color #121829;
+@define-color sidebar_fg_color #dcd7ba;
+@define-color sidebar_backdrop_color #141a2c;
+@define-color card_bg_color #1c2440;
+@define-color card_fg_color #dcd7ba;
+@define-color dialog_bg_color #1c2440;
+@define-color dialog_fg_color #dcd7ba;
+@define-color popover_bg_color #1c2440;
+@define-color popover_fg_color #dcd7ba;
+@define-color thumbnail_bg_color #1c2440;
+@define-color thumbnail_fg_color #dcd7ba;
+@define-color shade_color rgba(0, 0, 0, 0.36);
+@define-color scrollbar_outline_color rgba(0, 0, 0, 0.5);
+
+/* Plain GTK4 apps (not libadwaita) don't read the named colours above, so style them directly. */
+window, window.background, .background { background-color: #141a2c; color: #dcd7ba; }
+.view, textview text, iconview, list, listview, columnview, treeview.view { background-color: #11172a; color: #dcd7ba; }
+headerbar { background-color: #0e1324; color: #e6e1ca; box-shadow: inset 0 -1px alpha(#dc6d4c, 0.45); }
+popover > contents, popover.menu > contents { background-color: #1c2440; color: #dcd7ba; }
+entry, spinbutton, dropdown > button, combobox > box > button { background-color: #1c2440; color: #dcd7ba; }
+button:not(.flat):not(.suggested-action):not(.destructive-action) { background-color: #1c2440; }
+button:not(.flat):not(.suggested-action):not(.destructive-action):hover { background-color: #25304e; }
+list > row:selected, listview > row:selected, columnview > listview > row:selected, treeview.view:selected,
+iconview:selected, flowbox > flowboxchild:selected { background-color: #2d4f67; color: #e6e1ca; }
+selection, text selection { background-color: alpha(#2d4f67, 0.85); color: #e6e1ca; }
+
+/* plugsuit-coral accents */
+switch:checked { background-color: #d27e63; }
+switch:checked > slider { background-color: #11172a; }
+check:checked, check:indeterminate, radio:checked, radio:indeterminate { background-color: #d27e63; color: #11172a; border-color: #d27e63; }
+scale > trough > highlight { background-color: #d27e63; background-image: none; border-color: #d27e63; box-shadow: none; outline: none; }
+progressbar > trough > progress { background-color: #d27e63; }
+levelbar > trough > block.filled { background-color: #d27e63; }
+entry:focus-within, spinbutton:focus-within { outline-color: alpha(#d27e63, 0.7); box-shadow: inset 0 0 0 1px #d27e63; }
+notebook > header > tabs > tab:checked, stackswitcher > button:checked { box-shadow: inset 0 -2px #d27e63; }
+button.suggested-action { background-color: #3d6487; color: #e6e1ca; }
+link, button.link { color: #7e9cd8; }
+link:visited, button.link:visited { color: #c27a83; }
