@@ -6,7 +6,7 @@
             <object class="GtkMenuItem" id="lock">
                 <child>
                     <object class="GtkLabel">
-                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;lock&lt;/span&gt;  Lock</property>
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;lock&lt;/span&gt;  Lock&lt;span fgalpha='50%' font_size='9pt'&gt;   ロック&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <property name="xalign">0</property>
                     </object>
@@ -17,7 +17,7 @@
             <object class="GtkMenuItem" id="logout">
                 <child>
                     <object class="GtkLabel">
-                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;logout&lt;/span&gt;  Log out</property>
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;logout&lt;/span&gt;  Log out&lt;span fgalpha='50%' font_size='9pt'&gt;   退出&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <property name="xalign">0</property>
                     </object>
@@ -28,7 +28,7 @@
             <object class="GtkMenuItem" id="suspend">
                 <child>
                     <object class="GtkLabel">
-                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;bedtime&lt;/span&gt;  Suspend</property>
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;bedtime&lt;/span&gt;  Suspend&lt;span fgalpha='50%' font_size='9pt'&gt;   待機&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <property name="xalign">0</property>
                     </object>
@@ -42,7 +42,7 @@
             <object class="GtkMenuItem" id="reboot">
                 <child>
                     <object class="GtkLabel">
-                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;restart_alt&lt;/span&gt;  Reboot</property>
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;restart_alt&lt;/span&gt;  Reboot&lt;span fgalpha='50%' font_size='9pt'&gt;   再起動&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <property name="xalign">0</property>
                     </object>
@@ -53,7 +53,7 @@
             <object class="GtkMenuItem" id="reboot-firmware">
                 <child>
                     <object class="GtkLabel">
-                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;developer_board&lt;/span&gt;  Reboot to UEFI</property>
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;developer_board&lt;/span&gt;  Reboot to UEFI&lt;span fgalpha='50%' font_size='9pt'&gt;   UEFI&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <property name="xalign">0</property>
                     </object>
@@ -64,7 +64,7 @@
             <object class="GtkMenuItem" id="shutdown">
                 <child>
                     <object class="GtkLabel">
-                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;power_settings_new&lt;/span&gt;  Shut down</property>
+                        <property name="label">&lt;span face=&apos;Material Symbols Rounded&apos; font_size=&apos;11pt&apos; rise=&apos;-2.5pt&apos;&gt;power_settings_new&lt;/span&gt;  Shut down&lt;span fgalpha='50%' font_size='9pt'&gt;   停止&lt;/span&gt;</property>
                         <property name="use-markup">True</property>
                         <property name="xalign">0</property>
                     </object>

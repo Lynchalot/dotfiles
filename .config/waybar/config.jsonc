@@ -401,6 +401,11 @@
     "custom/hyde-menu": {
         "format": "<span face='Material Symbols Rounded' font_size='11.5pt' rise='-2.5pt'>tune</span>",
         "menu": "on-click",
-        "tooltip-format": "HyDE settings: themes, wallpaper, waybar, lockscreen…"
+        "tooltip-format": "HyDE settings: themes, wallpaper, waybar, lockscreen…",
+        "menu-file": "${HYDE_WAYBAR_MENU_DIR:-$XDG_DATA_HOME/waybar/menus}/hyde-menu-rice.xml",
+        "menu-actions": {
+            "ui-sounds-on": "$HOME/.local/bin/rice-sound on",
+            "ui-sounds-off": "$HOME/.local/bin/rice-sound off"
+        }
     }
 }

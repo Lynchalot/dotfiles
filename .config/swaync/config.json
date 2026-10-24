@@ -33,6 +33,10 @@
   "text-empty": "No Notifications",
   "script-fail-notify": true,
   "scripts": {
+    "rice-sound": {
+      "exec": "/home/Lynchalot/.local/bin/rice-sound --from-swaync",
+      "app-name": ".*"
+    },
     "example-script": {
       "exec": "echo 'Do something...'",
       "urgency": "Normal"
@@ -68,7 +72,7 @@
       "clear-all-button": true
     },
     "title": {
-      "text": "Notifications",
+      "text": "通知 // Notifications",
       "clear-all-button": true,
       "button-text": "Clear All"
     },

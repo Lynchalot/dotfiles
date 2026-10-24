@@ -1,29 +1,38 @@
 #!/usr/bin/env bash
-# rice-sound: quiet UI sounds for the NERV extras (sounds in ~/.local/share/rice-sounds).
-#   rice-sound NAME          play notify|shot|lock|unlock|error|vol|plug|unplug
+# rice-sound: quiet UI sounds on any theme, OFF by default (sounds in ~/.local/share/rice-sounds).
+#   rice-sound NAME          play notify|shot|lock|unlock|error|vol|plug|unplug (only while on)
 #   rice-sound --from-swaync called by swaync for every notification (picks notify or shot)
-#   rice-sound toggle        mute / unmute all sounds (Super+Alt+A)
-# Plays only while the NERV extras are on (rice-extras), sounds aren't muted, and Do Not Disturb is off.
-st=${XDG_STATE_HOME:-$HOME/.local/state}/rice-extras
+#   rice-sound on|off|toggle switch them (HyDE menu > UI Sounds, or Super+Alt+A)
+#   rice-sound status        print on / off
+# Never plays during Do Not Disturb.
+st=${XDG_STATE_HOME:-$HOME/.local/state}/rice-sounds
 dir=$HOME/.local/share/rice-sounds
 
-if [[ ${1:-} == toggle ]]; then
+set_on() {
     mkdir -p "$st"
-    if [[ -f $st/muted ]]; then
-        rm -f "$st/muted"
+    if [[ $1 == 1 ]]; then
+        touch "$st/on"
         notify-send -a "UI sounds" -t 1500 -i audio-volume-high "UI sounds on"
     else
-        touch "$st/muted"
-        notify-send -a "UI sounds" -t 1500 -i audio-volume-muted "UI sounds muted"
+        rm -f "$st/on"
+        notify-send -a "UI sounds" -t 1500 -i audio-volume-muted "UI sounds off"
     fi
-    exit 0
-fi
+}
 
-[[ -f $st/active && ! -f $st/muted ]] || exit 0
+case ${1:-} in
+    on) set_on 1; exit 0 ;;
+    off) set_on 0; exit 0 ;;
+    toggle) [[ -f $st/on ]] && set_on 0 || set_on 1; exit 0 ;;
+    status) [[ -f $st/on ]] && echo on || echo off; exit 0 ;;
+esac
+
+[[ -f $st/on ]] || exit 0
 [[ $(swaync-client -D 2>/dev/null) == true ]] && exit 0
 
 name=${1:-notify}
 if [[ $name == --from-swaync ]]; then
+    # the "UI sounds on/off" confirmation itself stays silent
+    [[ ${SWAYNC_APP_NAME:-} == "UI sounds" ]] && exit 0
     name=notify
     [[ "${SWAYNC_APP_NAME:-} ${SWAYNC_SUMMARY:-}" == *[Ss]creenshot* ]] && name=shot
 fi

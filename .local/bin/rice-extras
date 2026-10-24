@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""rice-extras: the NERV extras, switched on only for the themes listed in ~/.config/hyde/rice-extras.conf.
+"""rice-extras: the NERV look, switched on only for the themes listed in ~/.config/hyde/rice-extras.conf.
 
   rice-extras             show whether the extras are on
   rice-extras on|off      switch them now
@@ -9,10 +9,9 @@
 What "on" changes, and "off" puts back exactly:
   lock screen      HyDE's hyprlock layout -> NERV (off: the conf's default_lock)
   launcher         search placeholder "検索 // Search apps…" (~/.config/rofi/rice-extras.rasi)
-  notifications    centre heading "通知 // Notifications"; a swaync script for UI sounds
+  notifications    centre heading "通知 // Notifications"
   bar power menu   Japanese tags next to Lock, Reboot, ... (mystyle9's power-flat.xml)
-  volume pop-up    rice-osd.service (swayosd, NERV style); rice-vol uses it while on
-  UI sounds        rice-sound plays only while on (Super+Alt+A mutes them)
+UI sounds are a separate, theme-independent option: rice-sound (HyDE menu > UI Sounds, Super+Alt+A).
 """
 import json, os, re, subprocess, sys, time
 from pathlib import Path
@@ -30,7 +29,6 @@ POWER = H / ".local/share/waybar/menus/power-flat.xml"
 BAR_UNIT = "hyde-Hyprland-bar.service"
 
 TITLE_ON = "通知 // Notifications"
-SCRIPT_NAME = "rice-sound"
 TAGS = {"lock": "ロック", "logout": "退出", "suspend": "待機", "reboot": "再起動",
         "reboot-firmware": "UEFI", "shutdown": "停止"}
 TAG_SPAN = "&lt;span fgalpha='50%' font_size='9pt'&gt;   {}&lt;/span&gt;"
@@ -91,16 +89,13 @@ def set_swaync(on):
         return
     cfg = json.loads(SWAYNC.read_text())
     title = cfg.setdefault("widget-config", {}).setdefault("title", {})
-    scripts = cfg.setdefault("scripts", {})
     saved = ST / "swaync-title"
     if on:
         if title.get("text") != TITLE_ON:
             saved.write_text(title.get("text", "Notifications"))
         title["text"] = TITLE_ON
-        scripts[SCRIPT_NAME] = {"exec": str(H / ".local/bin/rice-sound") + " --from-swaync", "app-name": ".*"}
     else:
         title["text"] = saved.read_text() if saved.exists() else "Notifications"
-        scripts.pop(SCRIPT_NAME, None)
     SWAYNC.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
     run("swaync-client", "-R")
     run("swaync-client", "-rs")
@@ -120,9 +115,6 @@ def set_power_menu(on):
     run("systemctl", "--user", "kill", "--kill-whom=main", "-s", "SIGUSR2", BAR_UNIT)
 
 
-def set_osd(on):
-    run("systemctl", "--user", "start" if on else "stop", "rice-osd.service")
-
 
 def apply(on):
     ST.mkdir(parents=True, exist_ok=True)
@@ -135,7 +127,6 @@ def apply(on):
     set_rofi(on)
     set_swaync(on)
     set_power_menu(on)
-    set_osd(on)
     (ST / "theme").write_text(current_theme() + "\n")
 
 
