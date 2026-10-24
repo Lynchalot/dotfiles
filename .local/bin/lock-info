@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# lock-info np|notif|caps: one line of real information for the NERV hyprlock layout.
+#   np     what's playing (same player as the media keys, via rice-media); empty when nothing is
+#   notif  how many notifications are waiting in swaync; empty when none
+#   caps   "CAPS LOCK" while Caps Lock is on (any keyboard); empty otherwise
+case ${1:-} in
+np)
+    p=$("$HOME/.local/bin/rice-media" pick 2>/dev/null) || exit 0
+    st=$(playerctl -p "$p" status 2>/dev/null)
+    [[ $st == Playing || $st == Paused ]] || exit 0
+    line=$(playerctl -p "$p" metadata --format '{{artist}} · {{title}}' 2>/dev/null)
+    line=${line#" · "}
+    ((${#line} > 52)) && line="${line:0:51}…"
+    [[ $st == Playing ]] && icon="󰝚" || icon="󰏤"
+    echo "$icon  $line"
+    ;;
+notif)
+    n=$(swaync-client -c 2>/dev/null)
+    [[ $n =~ ^[0-9]+$ ]] && ((n > 0)) && echo "󰂚  $n waiting"
+    ;;
+caps)
+    for f in /sys/class/leds/*::capslock/brightness; do
+        [[ -r $f && $(<"$f") != 0 ]] && { echo "CAPS LOCK"; exit 0; }
+    done
+    echo ""
+    ;;
+*)
+    echo "usage: lock-info np|notif|caps" >&2
+    exit 2
+    ;;
+esac
+exit 0

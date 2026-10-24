@@ -363,6 +363,8 @@ hl.bind(MOD .. " + ALT + Down", hl.dsp.exec_cmd("hyde-shell waybar --update --pr
 -- ── Selector menus HyDE no longer binds ──
 _F = {description = "[Theming and Wallpaper] select animations"}
 hl.bind(MOD .. " + SHIFT + Y", hl.dsp.exec_cmd(hyde.sh.animations("--select")), _F)
+_F = {description = "[Theming and Wallpaper] select tiling layout"}
+hl.bind(MOD .. " + SHIFT + L", hl.dsp.exec_cmd("hyde-shell layouts --select"), _F)
 _F = {description = "[Theming and Wallpaper] select hyprlock layout"}
 hl.bind(MOD .. " + SHIFT + U", hl.dsp.exec_cmd(hyde.sh.hyprlock("--select")), _F)
 

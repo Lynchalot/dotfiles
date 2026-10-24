@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# scroll-trial on|off|status: try Hyprland's built-in scrolling layout without touching any config.
+#   on      switch the live session to scrolling, with a few temporary keys
+#   off     `hyprctl reload`: config files are untouched, so dwindle and every normal bind come back
+# Logging out also ends the trial.
+#
+# Trial keys (Super+arrows already move focus and slide the strip):
+#   Super + = / Super + -          widen / narrow the focused column (1/3, 1/2, 2/3, full)
+#   Super + Shift + =              fit all visible columns on screen
+#   Super + Alt + , / .            move the column left / right
+#   Super + Alt + M                stack the window into the column on its left, or pull it back out
+case ${1:-status} in
+on)
+    hyprctl eval '
+hl.config({general = {layout = "scrolling"}, scrolling = {fullscreen_on_one_column = false}})
+local F = function(d) return {description = "[Scrolling trial] " .. d} end
+hl.bind("SUPER + EQUAL", hl.dsp.layout("colresize +conf"), {description = "[Scrolling trial] wider column", repeating = true})
+hl.bind("SUPER + MINUS", hl.dsp.layout("colresize -conf"), {description = "[Scrolling trial] narrower column", repeating = true})
+hl.bind("SUPER + SHIFT + EQUAL", hl.dsp.layout("fit visible"), F("fit visible columns"))
+hl.bind("SUPER + ALT + comma", hl.dsp.layout("move -col"), F("move column left"))
+hl.bind("SUPER + ALT + period", hl.dsp.layout("move +col"), F("move column right"))
+hl.bind("SUPER + ALT + M", hl.dsp.layout("consume_or_expel prev"), F("stack into / out of column"))
+' >/dev/null
+    notify-send -a "Layout" -t 4000 "Scrolling layout on (trial)" "Super + = / − width · Super + Alt + , . move · Super + Alt + M stack · scroll-trial off to undo"
+    ;;
+off)
+    hyprctl reload >/dev/null
+    notify-send -a "Layout" -t 2500 "Back to dwindle" "Scrolling trial ended"
+    ;;
+status)
+    hyprctl getoption general:layout | head -1
+    ;;
+*)
+    echo "usage: scroll-trial on|off|status" >&2
+    exit 2
+    ;;
+esac

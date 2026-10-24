@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# rice-clean: free disk space from caches that rebuild themselves (idea from github.com/electrocrem/gits, gits-clean).
+#   rice-clean            go through each item: size, what it is, then ask y/N before touching it
+#   rice-clean --dry-run  only measure; changes nothing
+# Never touched: ~/.cache/huggingface (photo-sort's model), ~/.cache/hyde (wallpaper colours/thumbs),
+# ~/.cache/nvidia (game shader cache), browser caches (they manage their own size).
+# Every removal is appended to ~/.local/state/rice-clean.log.
+set -uo pipefail
+DRY=0
+[[ ${1:-} == --dry-run || ${1:-} == -n ]] && DRY=1
+LOG=${XDG_STATE_HOME:-$HOME/.local/state}/rice-clean.log
+mkdir -p "$(dirname "$LOG")"
+b=$'\e[1m' d=$'\e[2m' g=$'\e[32m' y=$'\e[33m' r=$'\e[0m'
+total=0
+
+size_kb() { du -sk "$@" 2>/dev/null | awk '{s+=$1} END {print s+0}'; }
+human() { numfmt --to=iec --from-unit=1024 --suffix=B "${1:-0}" 2>/dev/null || echo "${1}K"; }
+free_kb() { df -k --output=avail "$HOME" | tail -1; }
+
+ask() {   # ask TITLE SIZE_KB "what it is" "what happens" COMMAND...
+    local title=$1 kb=$2 what=$3 effect=$4; shift 4
+    printf '\n%s%s%s  %s%s%s\n  %s\n  %s%s%s\n' "$b" "$title" "$r" "$y" "$(human "$kb")" "$r" "$what" "$d" "$effect" "$r"
+    ((kb > 0)) || { echo "  nothing to clean"; return; }
+    total=$((total + kb))
+    ((DRY)) && return
+    read -r -p "  Clean this? [y/N] " a
+    [[ $a == [yY]* ]] || { echo "  skipped"; return; }
+    if "$@"; then
+        echo "  ${g}done${r}"
+        printf '%s  %s  %s\n' "$(date -Is)" "$(human "$kb")" "$title" >>"$LOG"
+    else
+        echo "  failed (nothing else was touched)"
+    fi
+}
+
+before=$(free_kb)
+((DRY)) && echo "${b}Dry run:${r} measuring only, nothing will be changed."
+
+# 1. thumbnails
+ask "Thumbnail cache" "$(size_kb ~/.cache/thumbnails)" \
+    "Preview images file managers made of your pictures and videos (~/.cache/thumbnails)." \
+    "Rebuilt automatically when you browse those folders again; first visits are a bit slower." \
+    find "$HOME/.cache/thumbnails" -mindepth 1 -delete
+
+# 2. pacman: old versions + uninstalled packages (keeps the installed version of everything)
+# paccache's dry run ends with "... (disk space saved: 17.41 GiB)"; convert that figure to KiB
+paccache_kb() { paccache "$@" 2>/dev/null | awk '/disk space saved/ {
+    match($0, /[0-9.]+ [KMGT]?i?B/); split(substr($0, RSTART, RLENGTH), a, " ")
+    m = 1; if (a[2] ~ /^M/) m = 1024; else if (a[2] ~ /^G/) m = 1048576; else if (a[2] ~ /^T/) m = 1073741824; else if (a[2] == "B") m = 1/1024
+    printf "%d", a[1] * m }'; }
+a=$(paccache_kb -dk1); c=$(paccache_kb -duk0); pkg_kb=$(( ${a:-0} + ${c:-0} ))
+ask "Old package versions" "$pkg_kb" \
+    "Downloaded copies of older package versions, and of packages you've uninstalled (/var/cache/pacman/pkg)." \
+    "Keeps the copy of every installed version, so downgrading by one step still works. Needs your password." \
+    sh -c 'sudo paccache -rk1 && sudo paccache -ruk0'
+
+# 3. AUR build folders
+ask "AUR build leftovers" "$(size_kb ~/.cache/yay ~/.cache/paru)" \
+    "Source checkouts and built packages yay and paru kept after installing AUR packages." \
+    "The next AUR update downloads the source again. Installed packages are untouched." \
+    find "$HOME/.cache/yay" "$HOME/.cache/paru" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+# 4. pip download cache
+ask "pip download cache" "$(size_kb ~/.cache/pip)" \
+    "Python packages pip downloaded once (~/.cache/pip)." \
+    "Installed packages and venvs (photo-sort included) keep working; pip re-downloads only if asked to install again." \
+    find "$HOME/.cache/pip" -mindepth 1 -delete
+
+# 5. uv: only entries nothing uses
+if command -v uv >/dev/null; then
+    ask "uv cache (unused entries)" "$(size_kb ~/.cache/uv)" \
+        "uv's package cache. Only entries no environment uses are removed (uv cache prune); shown size is the whole cache." \
+        "Nothing installed changes." \
+        uv cache prune
+fi
+
+# 6. Steam shader caches
+ask "Steam shader caches" "$(size_kb ~/.local/share/Steam/steamapps/shadercache)" \
+    "Compiled shaders Steam keeps per game." \
+    "Rebuilt the next time each game runs; expect some stutter in the first minutes of play." \
+    find "$HOME/.local/share/Steam/steamapps/shadercache" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
+# 7. Trash
+trash_n=$(find ~/.local/share/Trash/files -mindepth 1 -maxdepth 1 2>/dev/null | wc -l)
+ask "Trash ($trash_n items)" "$(size_kb ~/.local/share/Trash)" \
+    "Files you deleted from a file manager (~/.local/share/Trash). Look through it first if you're unsure." \
+    "Permanently deletes everything in the Trash; this can't be undone." \
+    find "$HOME/.local/share/Trash" -mindepth 2 -delete
+
+# 8. systemd journal
+j_kb=$(journalctl --disk-usage 2>/dev/null | grep -o '[0-9.]*[KMGT]' | head -1 | numfmt --from=iec --to-unit=1024 2>/dev/null | cut -d. -f1)
+j_kb=$(( ${j_kb:-0} > 204800 ? ${j_kb:-0} - 204800 : 0 ))
+ask "Old system logs" "$j_kb" \
+    "The systemd journal, trimmed to its most recent 200 MB." \
+    "Older log history is dropped; recent logs for troubleshooting stay. Needs your password." \
+    sudo journalctl --vacuum-size=200M
+
+echo
+if ((DRY)); then
+    echo "${b}Could free up to $(human "$total").${r} Run ${b}rice-clean${r} to choose what to clean."
+else
+    after=$(free_kb)
+    echo "${b}Freed $(human $((after - before))).${r} Log: $LOG"
+fi

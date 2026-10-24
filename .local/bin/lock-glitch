@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# lock-glitch H|M [ghost]: hyprlock label for the NERV layout's clock (hour or minute).
+# Every 5 to 11 seconds (irregularly, for 150 ms) the digits flicker into symbols;
+# with `ghost` it prints the real digits ONLY during a glitch, for a red label offset behind
+# the clock (the colour split). The glitch is a pure function of the 150 ms time slot, so the
+# hour, minute and ghost labels agree without talking to each other. No forks: hyprlock runs
+# this about seven times a second. Idea from github.com/electrocrem/gits (gits-lock-clock).
+part=${1:-H}
+slot=$((${EPOCHREALTIME/./} / 150000))
+# One glitch per 8 s window (53 slots), at a pseudo-random slot among the window's first 20,
+# so glitches are always 5.1 to 10.8 s apart and never feel regular.
+win=$((slot / 53))
+h=$(((win * 2654435761) & 0xffffffff)); h=$((h ^ (h >> 15)))
+h=$(((h * 2246822519) & 0xffffffff)); h=$((h ^ (h >> 13)))
+glitch=0
+((slot % 53 == h % 20)) && glitch=1
+printf -v t "%(%${part})T" -1
+if ((glitch)); then
+    chars='01#$%&@=+*'
+    g=""
+    for ((i = 0; i < ${#t}; i++)); do
+        c=${t:i:1}
+        (((slot + i * 7) % 3 == 0)) && c=${chars:(slot * 5 + i * 3) % ${#chars}:1}
+        g+=$c
+    done
+    [[ ${2:-} == ghost ]] && echo "<b><big> $t </big></b>" || echo "<b><big> $g </big></b>"
+else
+    [[ ${2:-} == ghost ]] && echo " " || echo "<b><big> $t </big></b>"
+fi

@@ -1,0 +1,19 @@
+[Unit]
+Description=Stop Immich ML before it starves the desktop of VRAM
+Documentation=file:///home/Lynchalot/immich/vram-guard.sh
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/Lynchalot/immich/vram-guard.sh
+Restart=always
+RestartSec=30
+# Guard thresholds (MiB of the RTX 3060's 12288)
+Environment=STOP_AT=10000
+Environment=WARN_AT=8500
+Environment=INTERVAL=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

@@ -830,3 +830,12 @@ notificationwindow, blankwindow, blankwindow {
 .notification-group.collapsed:hover .notification-row:not(:only-child) .notification {
     background: alpha(@wallbash_1xa1, 0.8);
 }
+
+/* One pill per notification: the outer frame keeps its spacing but draws no outline
+   of its own (it used to share the card's border, showing as a pill within a pill). */
+.notification-row .notification-background,
+.notification-row .notification-background:hover,
+.notification-row:focus .notification-background {
+    border: none;
+    box-shadow: none;
+}
