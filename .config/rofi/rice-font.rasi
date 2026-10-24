@@ -1,3 +1,4 @@
 /* rice-font c */
-prompt, entry { font: "Nunito 12"; }
+entry { font: "Nunito 12"; }
+prompt { font: "Sarasa UI J Nerd Font 12"; }
 element-text { font: "Nunito 12"; }

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -4 44 33" width="44" height="33">
+  <!-- NERV extras: the launcher's search icon on Asuka NERV ("anta baka?!") -->
+  <path d="M3 2h38a2 2 0 0 1 2 2v17a2 2 0 0 1-2 2H15l-7 6v-6H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#dc6d4c"/>
+  <text x="22" y="17.6" text-anchor="middle" font-size="14" font-weight="bold" fill="#11172a" font-family="Sarasa UI J, Noto Sans CJK JP, sans-serif">バカ</text>
+</svg>

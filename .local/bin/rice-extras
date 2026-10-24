@@ -8,9 +8,12 @@
 
 What "on" changes, and "off" puts back exactly:
   lock screen      HyDE's hyprlock layout -> NERV (off: the conf's default_lock)
-  launcher         search placeholder "検索 // Search apps…" (~/.config/rofi/rice-extras.rasi)
+  launcher         search placeholder "検索 // Search apps…" and a バカ speech bubble instead of
+                   the Arch logo (~/.config/rofi/rice-extras.rasi, ~/.local/share/rice-extras/baka.svg)
   notifications    centre heading "通知 // Notifications"
   bar power menu   Japanese tags next to Lock, Reboot, ... (mystyle9's power-flat.xml)
+  colours          wallbash mode -> "theme", so the theme's own bar/launcher/terminal/Qt colour
+                   files are used instead of wallpaper colours (off: the mode you had before)
 UI sounds are a separate, theme-independent option: rice-sound (HyDE menu > UI Sounds, Super+Alt+A).
 """
 import json, os, re, subprocess, sys, time
@@ -24,6 +27,7 @@ STATERC = H / ".local/state/hyde/staterc"
 HYPRLOCK = CFG / "hypr/hyprlock.conf"
 LAYOUTS = CFG / "hypr/hyprlock"
 RASI = CFG / "rofi/rice-extras.rasi"
+BAKA = H / ".local/share/rice-extras/baka.svg"
 SWAYNC = CFG / "swaync/config.json"
 POWER = H / ".local/share/waybar/menus/power-flat.xml"
 BAR_UNIT = "hyde-Hyprland-bar.service"
@@ -80,7 +84,13 @@ def set_lock(name):
 
 def set_rofi(on):
     RASI.parent.mkdir(parents=True, exist_ok=True)
-    RASI.write_text('/* rice-extras: on */\nentry { placeholder: "検索 // Search apps…"; }\n' if on
+    # on: the バカ speech bubble replaces the Arch glyph in front of the search field
+    RASI.write_text('/* rice-extras: on */\n'
+                    'entry { placeholder: "検索 // Search apps…"; }\n'
+                    'inputbar { children: [ "icon-baka", "entry" ]; padding: 0.55em 1.1em; }\n'
+                    'entry { vertical-align: 0.5; }\n'
+                    f'icon-baka {{ expand: false; filename: "{BAKA}"; size: 1.9em; '
+                    'background-color: transparent; vertical-align: 0.5; }\n' if on
                     else "/* rice-extras: off */\n")
 
 
@@ -115,6 +125,36 @@ def set_power_menu(on):
     run("systemctl", "--user", "kill", "--kill-whom=main", "-s", "SIGUSR2", BAR_UNIT)
 
 
+def set_colours(on):
+    """Theme mode while on; the previous wallbash mode back when off (unless it was changed meanwhile)."""
+    if not STATERC.exists():
+        return
+    t = STATERC.read_text()
+    m = re.search(r'(?m)^enableWallDcol="?(\d)"?', t)
+    cur = m.group(1) if m else "1"
+    saved = ST / "wallbash-mode"
+    if on:
+        if cur == "0":
+            return
+        saved.write_text(cur + "\n")
+        new = "0"
+    else:
+        if not saved.exists():
+            return
+        new = saved.read_text().strip()
+        saved.unlink()
+        if cur != "0":
+            return  # you picked another mode yourself while the extras were on: keep it
+    t = re.sub(r'(?m)^enableWallDcol=.*$', f'enableWallDcol="{new}"', t) if m else t + f'enableWallDcol="{new}"\n'
+    STATERC.write_text(t)
+    # Re-deploy colours for the current wallpaper only (a full theme switch would also reset the wallpaper).
+    # A clean env makes color.set.sh re-read staterc instead of inheriting this wallbash run's mode.
+    env = {k: v for k, v in os.environ.items() if k not in ("HYDE_SHELL_INIT", "enableWallDcol")}
+    env["reload_flag"] = "1"
+    wall = os.path.realpath(H / ".cache/hyde/wall.set")
+    subprocess.Popen([str(H / ".local/lib/hyde/color.set.sh"), wall], env=env, start_new_session=True,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 
 def apply(on):
     ST.mkdir(parents=True, exist_ok=True)
@@ -128,6 +168,7 @@ def apply(on):
     set_swaync(on)
     set_power_menu(on)
     (ST / "theme").write_text(current_theme() + "\n")
+    set_colours(on)  # last: its colour run re-triggers --theme, which must see this theme as done
 
 
 def main():
@@ -144,8 +185,7 @@ def main():
         apply(theme in themes)
     else:
         on = (ST / "active").exists()
-        print(f"NERV extras: {'on' if on else 'off'}  (theme: {current_theme()}; "
-              f"sounds {'muted' if (ST / 'muted').exists() else 'on'})")
+        print(f"NERV extras: {'on' if on else 'off'}  (theme: {current_theme()})")
 
 
 if __name__ == "__main__":

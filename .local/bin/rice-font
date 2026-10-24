@@ -129,7 +129,9 @@ def apply(key):
         rasi = "/* rice-font d: style_20.rasi's own fonts */\n"
     else:
         size = p.get("rofi_text")
-        rasi = f'/* rice-font {key} */\nprompt, entry {{ font: "{p["rofi"]} {size or 11}"; }}\n'
+        rasi = f'/* rice-font {key} */\nentry {{ font: "{p["rofi"]} {size or 11}"; }}\n'
+        # the prompt is a Nerd Font glyph: a text font without it gets measured too narrow and clips it
+        rasi += f'prompt {{ font: "{CJK} {size or 11}"; }}\n'
         if size:
             rasi += f'element-text {{ font: "{p["rofi"]} {size}"; }}\n'
     (CFG / "rofi").mkdir(parents=True, exist_ok=True)
