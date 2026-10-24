@@ -277,12 +277,23 @@ hl.unbind("F10")
 hl.unbind("F11")
 hl.unbind("F12")
 hl.unbind("SHIFT + F11")
+-- Volume goes through ~/.local/bin/rice-vol: HyDE's volume control on every theme, except that
+-- with the NERV extras on (Asuka NERV) it shows the NERV pop-up and a soft step click instead.
+local VOL = os.getenv("HOME") .. "/.local/bin/rice-vol"
+for _, k in ipairs({"XF86AudioRaiseVolume", "XF86AudioLowerVolume", "XF86AudioMute", "XF86AudioMicMute"}) do
+    hl.unbind(k)
+end
 _F = {description = "[Hardware Controls|Audio] un/mute output", locked = true}
-hl.bind(MOD .. " + F10", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "m")), _F)
+hl.bind(MOD .. " + F10", hl.dsp.exec_cmd(VOL .. " mute"), _F)
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd(VOL .. " mute"), _F)
+_F = {description = "[Hardware Controls|Audio] un/mute microphone", locked = true}
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd(VOL .. " mic"), _F)
 _F = {description = "[Hardware Controls|Audio] decrease volume", locked = true, repeating = true}
-hl.bind(MOD .. " + F11", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "d")), _F)
+hl.bind(MOD .. " + F11", hl.dsp.exec_cmd(VOL .. " down"), _F)
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd(VOL .. " down"), _F)
 _F = {description = "[Hardware Controls|Audio] increase volume", locked = true, repeating = true}
-hl.bind(MOD .. " + F12", hl.dsp.exec_cmd(hyde.sh.volumecontrol("-o", "i")), _F)
+hl.bind(MOD .. " + F12", hl.dsp.exec_cmd(VOL .. " up"), _F)
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd(VOL .. " up"), _F)
 
 hl.unbind("Print")
 _F = {description = "[Utilities] snip screen"}
@@ -296,6 +307,13 @@ local cycle_fullscreen = function()
 end
 _F = {description = "[Window Management] cycle fullscreen"}
 hl.bind(MOD .. " + Return", cycle_fullscreen, _F)
+
+-- ── NERV extras (sounds only play on Asuka NERV; see ~/.local/bin/rice-extras) ──
+hl.unbind(MOD .. " + L")
+_F = {description = "[Window Management] lock session"}
+hl.bind(MOD .. " + L", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-lock"), _F)
+_F = {description = "[Utilities] UI sounds on/off"}
+hl.bind(MOD .. " + ALT + A", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-sound toggle"), _F)
 
 -- ── Rice toggles ──
 _F = {description = "[Utilities] caffeine on/off"}

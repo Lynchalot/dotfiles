@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# rice-sound: quiet UI sounds for the NERV extras (sounds in ~/.local/share/rice-sounds).
+#   rice-sound NAME          play notify|shot|lock|unlock|error|vol|plug|unplug
+#   rice-sound --from-swaync called by swaync for every notification (picks notify or shot)
+#   rice-sound toggle        mute / unmute all sounds (Super+Alt+A)
+# Plays only while the NERV extras are on (rice-extras), sounds aren't muted, and Do Not Disturb is off.
+st=${XDG_STATE_HOME:-$HOME/.local/state}/rice-extras
+dir=$HOME/.local/share/rice-sounds
+
+if [[ ${1:-} == toggle ]]; then
+    mkdir -p "$st"
+    if [[ -f $st/muted ]]; then
+        rm -f "$st/muted"
+        notify-send -a "UI sounds" -t 1500 -i audio-volume-high "UI sounds on"
+    else
+        touch "$st/muted"
+        notify-send -a "UI sounds" -t 1500 -i audio-volume-muted "UI sounds muted"
+    fi
+    exit 0
+fi
+
+[[ -f $st/active && ! -f $st/muted ]] || exit 0
+[[ $(swaync-client -D 2>/dev/null) == true ]] && exit 0
+
+name=${1:-notify}
+if [[ $name == --from-swaync ]]; then
+    name=notify
+    [[ "${SWAYNC_APP_NAME:-} ${SWAYNC_SUMMARY:-}" == *[Ss]creenshot* ]] && name=shot
+fi
+f=$dir/$name.wav
+[[ -f $f ]] || exit 0
+
+# don't stack the same sound when it fires several times at once (held volume key)
+stamp=${XDG_RUNTIME_DIR:-/tmp}/rice-sound.$name
+now=$(date +%s%N)
+last=$(cat "$stamp" 2>/dev/null || echo 0)
+((now - last < 90000000)) && exit 0
+echo "$now" >"$stamp"
+pw-play --volume 0.7 "$f" >/dev/null 2>&1 &

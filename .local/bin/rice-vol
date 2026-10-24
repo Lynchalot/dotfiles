@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# rice-vol up|down|mute|mic: what the volume keys run.
+# With the NERV extras on (and the swayosd pop-up running) it changes volume through swayosd, which
+# shows the NERV pill, plus a soft step click. Otherwise it runs exactly HyDE's volume command.
+st=${XDG_STATE_HOME:-$HOME/.local/state}/rice-extras
+if [[ -f $st/active ]] && systemctl --user is-active --quiet rice-osd.service; then
+    case ${1:-} in
+        up)   swayosd-client --output-volume raise --max-volume 100 && rice-sound vol ;;
+        down) swayosd-client --output-volume lower && rice-sound vol ;;
+        mute) swayosd-client --output-volume mute-toggle ;;
+        mic)  swayosd-client --input-volume mute-toggle ;;
+    esac
+else
+    case ${1:-} in
+        up)   hyde-shell volumecontrol -o i ;;
+        down) hyde-shell volumecontrol -o d ;;
+        mute) hyde-shell volumecontrol -o m ;;
+        mic)  hyde-shell volumecontrol -i m ;;
+    esac
+fi

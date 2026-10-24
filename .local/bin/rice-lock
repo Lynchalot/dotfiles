@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# rice-lock: Super+L. Lock sound, HyDE's normal lock screen, then the unlock chime once you're back in.
+# (The sounds only play while the NERV extras are on; on other themes this is just the normal lock.)
+rice-sound lock
+hyde-shell lock-session
+# lock-session asks hypridle to lock (hyprlock runs in its own scope); wait for the unlock in the background
+(
+    for _ in {1..20}; do pgrep -x hyprlock >/dev/null && break; sleep 0.25; done
+    while pgrep -x hyprlock >/dev/null; do sleep 0.4; done
+    rice-sound unlock
+) >/dev/null 2>&1 &
+disown

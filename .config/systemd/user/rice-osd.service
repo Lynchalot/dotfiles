@@ -1,0 +1,7 @@
+[Unit]
+Description=NERV volume pop-up (swayosd), started and stopped by rice-extras
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/swayosd-server --style %h/.config/swayosd/nerv.css --top-margin 0.86 --duration 1200
+Restart=on-failure

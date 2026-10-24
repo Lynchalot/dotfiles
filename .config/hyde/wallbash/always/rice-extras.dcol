@@ -1,0 +1,3 @@
+${cacheDir}/rice-extras.hook|${HOME}/.local/bin/rice-extras --theme
+# Written by wallbash on every theme/wallpaper change; the command after "|" switches the NERV
+# extras on for the themes listed in ~/.config/hyde/rice-extras.conf and off for every other.

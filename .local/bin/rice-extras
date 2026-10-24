@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+"""rice-extras: the NERV extras, switched on only for the themes listed in ~/.config/hyde/rice-extras.conf.
+
+  rice-extras             show whether the extras are on
+  rice-extras on|off      switch them now
+  rice-extras --theme     on for a listed theme, off for any other (run by
+                          ~/.config/hyde/wallbash/always/rice-extras.dcol on theme switches)
+
+What "on" changes, and "off" puts back exactly:
+  lock screen      HyDE's hyprlock layout -> NERV (off: the conf's default_lock)
+  launcher         search placeholder "検索 // Search apps…" (~/.config/rofi/rice-extras.rasi)
+  notifications    centre heading "通知 // Notifications"; a swaync script for UI sounds
+  bar power menu   Japanese tags next to Lock, Reboot, ... (mystyle9's power-flat.xml)
+  volume pop-up    rice-osd.service (swayosd, NERV style); rice-vol uses it while on
+  UI sounds        rice-sound plays only while on (Super+Alt+A mutes them)
+"""
+import json, os, re, subprocess, sys, time
+from pathlib import Path
+
+H = Path.home()
+CFG = H / ".config"
+ST = Path(os.environ.get("XDG_STATE_HOME", H / ".local/state")) / "rice-extras"
+CONF = CFG / "hyde/rice-extras.conf"
+STATERC = H / ".local/state/hyde/staterc"
+HYPRLOCK = CFG / "hypr/hyprlock.conf"
+LAYOUTS = CFG / "hypr/hyprlock"
+RASI = CFG / "rofi/rice-extras.rasi"
+SWAYNC = CFG / "swaync/config.json"
+POWER = H / ".local/share/waybar/menus/power-flat.xml"
+BAR_UNIT = "hyde-Hyprland-bar.service"
+
+TITLE_ON = "通知 // Notifications"
+SCRIPT_NAME = "rice-sound"
+TAGS = {"lock": "ロック", "logout": "退出", "suspend": "待機", "reboot": "再起動",
+        "reboot-firmware": "UEFI", "shutdown": "停止"}
+TAG_SPAN = "&lt;span fgalpha='50%' font_size='9pt'&gt;   {}&lt;/span&gt;"
+TAG_RE = re.compile(r"&lt;span fgalpha='50%' font_size='9pt'&gt;[^&]*&lt;/span&gt;")
+
+
+def run(*cmd):
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def conf():
+    themes, default_lock, lock = set(), "Asuka", "NERV"
+    if CONF.exists():
+        for line in CONF.read_text().splitlines():
+            line = line.split("#", 1)[0].strip()
+            if "=" not in line:
+                continue
+            k, v = (x.strip() for x in line.split("=", 1))
+            if k == "default_lock":
+                default_lock = v
+            elif k == "nerv_lock":
+                lock = v
+            elif v == "nerv":
+                themes.add(k)
+    return themes, default_lock, lock
+
+
+def current_theme():
+    t = os.environ.get("HYDE_THEME")
+    if t:
+        return t
+    m = re.search(r'(?m)^HYDE_THEME="?([^"\n]*)"?', STATERC.read_text()) if STATERC.exists() else None
+    return m.group(1) if m else ""
+
+
+# ── pieces ──────────────────────────────────────────────────────────────
+def set_lock(name):
+    path = LAYOUTS / f"{name}.conf"
+    if not path.exists():
+        return
+    if STATERC.exists():
+        t = STATERC.read_text()
+        t = re.sub(r'(?m)^HYPRLOCK_LAYOUT=.*$', f'HYPRLOCK_LAYOUT="{name}"', t)
+        STATERC.write_text(t)
+    if HYPRLOCK.exists():
+        t = HYPRLOCK.read_text()
+        HYPRLOCK.write_text(re.sub(r'(?m)^\$LAYOUT_PATH=.*$', f'$LAYOUT_PATH={path}', t))
+
+
+def set_rofi(on):
+    RASI.parent.mkdir(parents=True, exist_ok=True)
+    RASI.write_text('/* rice-extras: on */\nentry { placeholder: "検索 // Search apps…"; }\n' if on
+                    else "/* rice-extras: off */\n")
+
+
+def set_swaync(on):
+    if not SWAYNC.exists():
+        return
+    cfg = json.loads(SWAYNC.read_text())
+    title = cfg.setdefault("widget-config", {}).setdefault("title", {})
+    scripts = cfg.setdefault("scripts", {})
+    saved = ST / "swaync-title"
+    if on:
+        if title.get("text") != TITLE_ON:
+            saved.write_text(title.get("text", "Notifications"))
+        title["text"] = TITLE_ON
+        scripts[SCRIPT_NAME] = {"exec": str(H / ".local/bin/rice-sound") + " --from-swaync", "app-name": ".*"}
+    else:
+        title["text"] = saved.read_text() if saved.exists() else "Notifications"
+        scripts.pop(SCRIPT_NAME, None)
+    SWAYNC.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
+    run("swaync-client", "-R")
+    run("swaync-client", "-rs")
+
+
+def set_power_menu(on):
+    if not POWER.exists():
+        return
+    t = TAG_RE.sub("", POWER.read_text())
+    if on:
+        def add(m):
+            tag = TAGS.get(m.group(1))
+            return m.group(0) if not tag else m.group(0)[: -len("</property>")] + TAG_SPAN.format(tag) + "</property>"
+        t = re.sub(r'id="([\w-]+)">\s*<child>\s*<object class="GtkLabel">\s*<property name="label">[^<]*</property>', add, t)
+    POWER.write_text(t)
+    # waybar reads menu files when it (re)loads its config; signal only its main process
+    run("systemctl", "--user", "kill", "--kill-whom=main", "-s", "SIGUSR2", BAR_UNIT)
+
+
+def set_osd(on):
+    run("systemctl", "--user", "start" if on else "stop", "rice-osd.service")
+
+
+def apply(on):
+    ST.mkdir(parents=True, exist_ok=True)
+    themes, default_lock, nerv_lock = conf()
+    if on:
+        (ST / "active").write_text("nerv\n")
+    else:
+        (ST / "active").unlink(missing_ok=True)
+    set_lock(nerv_lock if on else default_lock)
+    set_rofi(on)
+    set_swaync(on)
+    set_power_menu(on)
+    set_osd(on)
+    (ST / "theme").write_text(current_theme() + "\n")
+
+
+def main():
+    arg = sys.argv[1] if len(sys.argv) > 1 else ""
+    if arg in ("on", "off"):
+        apply(arg == "on")
+    elif arg == "--theme":
+        theme = current_theme()
+        last = (ST / "theme").read_text().strip() if (ST / "theme").exists() else None
+        if last == theme:
+            return  # wallpaper change within the same theme
+        time.sleep(4)  # after HyDE's own theme-switch writes (and rice-font's 3 s)
+        themes, _, _ = conf()
+        apply(theme in themes)
+    else:
+        on = (ST / "active").exists()
+        print(f"NERV extras: {'on' if on else 'off'}  (theme: {current_theme()}; "
+              f"sounds {'muted' if (ST / 'muted').exists() else 'on'})")
+
+
+if __name__ == "__main__":
+    main()
