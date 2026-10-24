@@ -204,7 +204,7 @@ treeview.view:selected:not(.progressbar):not(.trough),
 modelbutton.flat:selected,
 .menuitem.button.flat:selected {
   color: #dcd7ba;
-  background-color: #393836;
+  background-color: #2d4f67;
 }
 
 .nemo-window .view selection,
@@ -215,7 +215,7 @@ modelbutton.flat:selected,
 flowbox flowboxchild:selected,
 .background.csd .view:selected {
   color: #2d4f67;
-  background-color: rgba(200, 192, 147, 0.2);
+  background-color: rgba(126, 156, 216, 0.2);
 }
 
 .nemo-window .nemo-window-pane widget.entry:selected,
@@ -1052,7 +1052,7 @@ XfdesktopIconView.view flowbox treeview.view flowbox .content-view .rubberband,
 flowbox treeview.view .content-view .rubberband,
 .content-view flowbox treeview.view .rubberband {
   border: 1px solid #2d4f67;
-  background-color: rgba(200, 192, 147, 0.3);
+  background-color: rgba(126, 156, 216, 0.3);
 }
 
 flowbox flowboxchild {
@@ -2315,12 +2315,12 @@ button.osd {
 }
 
 button.osd:hover {
-  background-color: rgba(200, 192, 147, 0.8);
+  background-color: rgba(126, 156, 216, 0.8);
   color: #e6e1ca;
 }
 
 button.osd:active {
-  background-color: rgba(200, 192, 147, 0.6);
+  background-color: rgba(126, 156, 216, 0.6);
   color: #e6e1ca;
 }
 
@@ -2352,23 +2352,23 @@ button.suggested-action:disabled {
 
 button.suggested-action:hover {
   box-shadow: inset 0 0 0 9999px transparent,
-    0 2px 2.4px -1px rgba(200, 192, 147, 0.2),
-    0 4px 3px 0 rgba(200, 192, 147, 0.14), 0 1px 6px 0 rgba(200, 192, 147, 0.12);
+    0 2px 2.4px -1px rgba(126, 156, 216, 0.2),
+    0 4px 3px 0 rgba(126, 156, 216, 0.14), 0 1px 6px 0 rgba(126, 156, 216, 0.12);
 }
 
 button.suggested-action:checked {
-  background-color: rgba(200, 192, 147, 0.961);
+  background-color: rgba(126, 156, 216, 0.961);
 }
 
 button.suggested-action:checked:hover {
   box-shadow: inset 0 0 0 9999px transparent,
-    0 3px 3px -3px rgba(200, 192, 147, 0.3),
-    0 2px 3px -1px rgba(200, 192, 147, 0.24),
-    0 2px 5px 0 rgba(200, 192, 147, 0.12);
+    0 3px 3px -3px rgba(126, 156, 216, 0.3),
+    0 2px 3px -1px rgba(126, 156, 216, 0.24),
+    0 2px 5px 0 rgba(126, 156, 216, 0.12);
 }
 
 button.suggested-action:focus {
-  box-shadow: 0 0 0 2px rgba(200, 192, 147, 0.35);
+  box-shadow: 0 0 0 2px rgba(126, 156, 216, 0.35);
 }
 
 button.suggested-action.flat {
@@ -2383,7 +2383,7 @@ button.suggested-action.flat:disabled {
 }
 
 button.suggested-action.flat:checked {
-  background-color: rgba(200, 192, 147, 0.3);
+  background-color: rgba(126, 156, 216, 0.3);
 }
 
 button.destructive-action {
@@ -3549,7 +3549,7 @@ menu,
   background-color: #0e1324;
   background-clip: border-box;
   border-radius: 12px;
-  border: 1px solid #393836;
+  border: 1px solid #2d4f67;
 }
 
 .csd menu,
@@ -5083,7 +5083,7 @@ overshoot.top {
     0,
     center top,
     0.75,
-    to(rgba(200, 192, 147, 0.24)),
+    to(rgba(126, 156, 216, 0.24)),
     to(transparent)
   );
   background-repeat: no-repeat;
@@ -5100,7 +5100,7 @@ overshoot.bottom {
     0,
     center bottom,
     0.75,
-    to(rgba(200, 192, 147, 0.24)),
+    to(rgba(126, 156, 216, 0.24)),
     to(transparent)
   );
   background-repeat: no-repeat;
@@ -5117,7 +5117,7 @@ overshoot.left {
     0,
     left center,
     0.75,
-    to(rgba(200, 192, 147, 0.24)),
+    to(rgba(126, 156, 216, 0.24)),
     to(transparent)
   );
   background-repeat: no-repeat;
@@ -5134,7 +5134,7 @@ overshoot.right {
     0,
     right center,
     0.75,
-    to(rgba(200, 192, 147, 0.24)),
+    to(rgba(126, 156, 216, 0.24)),
     to(transparent)
   );
   background-repeat: no-repeat;
@@ -6072,7 +6072,7 @@ messagedialog.background.csd decoration {
   border-radius: 0;
   box-shadow: none;
   background-color: #141a2c;
-  border: 1px solid #393836;
+  border: 1px solid #2d4f67;
 }
 
 .solid-csd decoration:backdrop {
@@ -8644,7 +8644,7 @@ ideeditorutilities > dzldockpaned > box > stackswitcher button {
 ideeditorutilities > dzldockpaned > box > stackswitcher button:active {
   background-image: radial-gradient(
     circle,
-    rgba(200, 192, 147, 0.7) 10%,
+    rgba(126, 156, 216, 0.7) 10%,
     transparent 0%
   );
 }
@@ -9572,7 +9572,7 @@ window.background.chromium decoration {
 
 window.background.chromium entry,
 window.background.chromium > button {
-  border: 1px solid #393836;
+  border: 1px solid #2d4f67;
 }
 
 window.background.chromium > button {
@@ -9606,7 +9606,7 @@ window.background.chromium treeview.view.cell:selected:focus {
 }
 
 window.background.chromium treeview.view button {
-  border: 1px solid #393836;
+  border: 1px solid #2d4f67;
   background-color: #141a2c;
 }
 
@@ -9635,7 +9635,7 @@ tooltip.background.chromium {
 }
 
 #MozillaGtkWidget > widget > separator {
-  color: #393836;
+  color: #2d4f67;
 }
 
 #MozillaGtkWidget > widget > scrollbar {
@@ -9648,7 +9648,7 @@ tooltip.background.chromium {
 
 #MozillaGtkWidget > widget > entry,
 #MozillaGtkWidget > widget > button > button {
-  border: 1px solid #393836;
+  border: 1px solid #2d4f67;
   border-radius: 6px;
   box-shadow: none;
 }
@@ -9749,11 +9749,11 @@ tooltip.background.chromium {
 }
 
 #MozillaGtkWidget > widget > frame {
-  color: #393836;
+  color: #2d4f67;
 }
 
 #MozillaGtkWidget menu > separator {
-  color: #393836;
+  color: #2d4f67;
 }
 
 window.background:not(.csd) > window > menu menuitem {
@@ -9909,7 +9909,7 @@ window.background.csd
   box-shadow: 0 2px 2.4px -1px rgba(0, 0, 0, 0.2),
     0 4px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 6px 0 rgba(0, 0, 0, 0.12);
   margin-top: -1px;
-  border: 1px solid #393836;
+  border: 1px solid #2d4f67;
 }
 
 #gnc-id-main-window treeview.view {
@@ -11596,7 +11596,7 @@ window.background.csd.thunar
 }
 
 .nemo-window paned > .sidebar .places-treeview {
-  -nemoplacestreeview-disk-full-bg-color: rgba(200, 192, 147, 0.961);
+  -nemoplacestreeview-disk-full-bg-color: rgba(126, 156, 216, 0.961);
   -nemoplacestreeview-disk-full-fg-color: #e6e1ca;
 }
 
@@ -11662,3 +11662,10 @@ headerbar, .titlebar:not(headerbar) { box-shadow: inset 0 -1px alpha(#dc6d4c, 0.
 *:visited, button.link:visited, button.link:visited > label { color: #c27a83; }
 button.suggested-action { background-color: #3d6487; border-color: #3d6487; color: #e6e1ca; }
 button.suggested-action:hover { background-color: #47719a; }
+
+/* readable selections in icon views (Thunar, Nemo, Nautilus): solid blue with light text */
+.nemo-window .view selection, .nemo-window .view:selected,
+.nautilus-window notebook .view:not(treeview) selection, .nautilus-window notebook .view:not(treeview):selected,
+.nautilus-window flowboxchild:selected .icon-item-background, flowbox flowboxchild:selected,
+.background.csd .view:selected, iconview:selected, .view:selected, .view:selected:focus {
+    color: #e6e1ca; background-color: #2d4f67; }
