@@ -1,0 +1,5 @@
+[PlasmaBrowserIntegration]
+shownCount=2
+
+[Module-gtkconfig]
+autoload=false
