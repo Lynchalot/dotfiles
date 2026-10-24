@@ -11674,3 +11674,11 @@ button.suggested-action:hover { background-color: #47719a; }
 infobar.warning > revealer > box, infobar.warning > revealer > box label,
 infobar.warning > revealer > box button, infobar.warning > revealer > box button label,
 infobar.warning > revealer > box *:link { color: #11172a; }
+
+/* animation: click ripple in coral instead of grey (Kanagawa's ripple keyframes, recoloured);
+   switches fade their colour as they flip */
+button:active, button.flat:active, headerbar button:active, toolbar button:active,
+messagedialog.csd .dialog-action-box button:active {
+  background-image: radial-gradient(circle, alpha(#dc6d4c, 0.35) 10%, transparent 0%);
+}
+switch { transition: background-color 250ms ease-out, border-color 250ms ease-out; }

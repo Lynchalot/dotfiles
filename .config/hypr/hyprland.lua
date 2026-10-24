@@ -166,8 +166,14 @@ hl.window_rule({
 -- failed after nearly every login. One unit = one owner; systemd coalesces the starts.
 -- The unit has ConditionEnvironment=WAYLAND_DISPLAY, and HyDE imports the environment into
 -- systemd in this same startup burst, so wait (max 10 s) for that before starting it.
+-- 2026-10-24: HyDE's env.lua sets DCONF_PROFILE=hyde_hyprland for apps started from Hyprland,
+-- but never hands it to systemd/D-Bus services. The settings portal then read the default dconf
+-- database (a stale Gruvbox-Plus-Dark icon theme), so every GTK4 app, swaync included, showed the
+-- wrong icons on every theme. Import it and restart the portal's GTK backend before swaync starts.
 hyde.config.start.notifications =
-    "sh -c 'for i in $(seq 50); do systemctl --user show-environment | grep -q ^WAYLAND_DISPLAY= && break; sleep 0.2; done; " ..
+    "sh -c 'systemctl --user import-environment DCONF_PROFILE; dbus-update-activation-environment --systemd DCONF_PROFILE; " ..
+    "systemctl --user try-restart xdg-desktop-portal-gtk; " ..
+    "for i in $(seq 50); do systemctl --user show-environment | grep -q ^WAYLAND_DISPLAY= && break; sleep 0.2; done; " ..
     "systemctl --user reset-failed swaync.service; systemctl --user start swaync.service'"
 
 hl.on(
@@ -400,3 +406,19 @@ hl.bind(MOD .. " + SHIFT + U", hl.dsp.exec_cmd(hyde.sh.hyprlock("--select")), _F
 -- (see ~/.config/hypr/gamemode.lua; pcall so a problem there can never break the config)
 local _gm_ok, _gm_err = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/gamemode.lua")
 if not _gm_ok then hl.exec_cmd("notify-send -a Hyprland \"gamemode.lua failed\" \"" .. tostring(_gm_err):gsub("\"", "") .. "\"") end
+
+-- ─────────────────────────────────────────────────────────────
+-- Asuka NERV only: windows pop in from 80% with a small bounce. Same duration as the Rice
+-- preset (2.6 = 260 ms, never slower); workspaces keep Rice's 300 ms slide. Every other theme
+-- keeps the preset untouched. dofile, not require, so the theme name is never a cached value.
+-- ─────────────────────────────────────────────────────────────
+do
+    local state = (os.getenv("XDG_STATE_HOME") or ((os.getenv("HOME") or "") .. "/.local/state"))
+    local ok, ui = pcall(dofile, state .. "/hyde/lua_state/ui.lua")
+    local theme = ok and type(ui) == "table" and type(ui.ui) == "table" and ui.ui.hyde_theme
+    if theme == "Asuka NERV" then
+        local ds = (hyde and hyde.config and hyde.config.anim and hyde.config.anim.duration_scale) or 1
+        hl.curve("nervPop", {type = "bezier", points = {{0.2, 1.3}, {0.4, 1}}})
+        hl.animation({leaf = "windowsIn", enabled = true, speed = 2.6 * ds, bezier = "nervPop", style = "popin 80%"})
+    end
+end

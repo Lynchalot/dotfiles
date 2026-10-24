@@ -1,5 +1,6 @@
 /* Wallbash palette: HyDE regenerates this on every theme switch */
 @import "/home/Lynchalot/.cache/hyde/wallbash/gtk.css";
+@import "/home/Lynchalot/.config/swaync/rice-extras.css"; /* NERV extras (rice-extras): バカ next to the title */
 
 :root {
   --cc-bg: rgba(46, 46, 46, 0.7);
@@ -14,7 +15,7 @@
   --text-color: rgb(255, 255, 255);
   --text-color-disabled: rgb(150, 150, 150);
   --bg-selected: rgb(0, 128, 255);
-  --notification-icon-size: 64px;
+  --notification-icon-size: 52px; /* was 64px: square app icons filled the whole card */
   --notification-app-icon-size: calc(var(--notification-icon-size) / 3);
   --notification-group-icon-size: 32px;
   --border: 1px solid var(--noti-border-color);
@@ -140,7 +141,7 @@ notificationwindow, blankwindow, blankwindow {
   -gtk-icon-size: var(--notification-icon-size);
   border-radius: 100px;
   /* Size in px */
-  margin: 4px;
+  margin: 8px;
 }
 
 .notification-row .notification-background .notification .notification-default-action .notification-content .app-icon {

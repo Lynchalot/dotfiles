@@ -10,7 +10,8 @@ What "on" changes, and "off" puts back exactly:
   lock screen      HyDE's hyprlock layout -> NERV (off: the conf's default_lock)
   launcher         search placeholder "検索 // Search apps…", a バカ speech bubble instead of
                    the Arch logo, and バカ on the apps button (~/.config/rofi/rice-extras.rasi, ~/.local/share/rice-extras/baka.svg)
-  notifications    centre heading "通知 // Notifications"
+  notifications    centre heading "通知 // Notifications" with the バカ bubble before it (pops in,
+                   hops on hover); pop-ups slide in with a coral shimmer and a coral edge
   bar power menu   Japanese tags next to Lock, Reboot, ... (mystyle9's power-flat.xml)
   colours          wallbash mode -> "theme", so the theme's own bar/launcher/terminal/Qt colour
                    files are used instead of wallpaper colours (off: the mode you had before)
@@ -27,8 +28,9 @@ STATERC = H / ".local/state/hyde/staterc"
 HYPRLOCK = CFG / "hypr/hyprlock.conf"
 LAYOUTS = CFG / "hypr/hyprlock"
 RASI = CFG / "rofi/rice-extras.rasi"
-BAKA = H / ".local/share/rice-extras/baka.svg"
+BAKA = H / ".local/share/rice-extras/baka-anta.svg"  # earlier: baka.svg (バカ), baka-qe.svg (バカ?!)
 SWAYNC = CFG / "swaync/config.json"
+SWAYNC_CSS = CFG / "swaync/rice-extras.css"
 POWER = H / ".local/share/waybar/menus/power-flat.xml"
 BAR_UNIT = "hyde-Hyprland-bar.service"
 
@@ -88,9 +90,9 @@ def set_rofi(on):
     RASI.write_text('/* rice-extras: on */\n'
                     'configuration { display-drun: "バカ"; }\n'
                     'entry { placeholder: "検索 // Search apps…"; }\n'
-                    'inputbar { children: [ "icon-baka", "entry" ]; padding: 0.55em 1.1em; }\n'
+                    'inputbar { children: [ "icon-baka", "entry" ]; padding: 0.15em 1.1em; }\n'
                     'entry { vertical-align: 0.5; }\n'
-                    f'icon-baka {{ expand: false; filename: "{BAKA}"; size: 1.9em; '
+                    f'icon-baka {{ expand: false; filename: "{BAKA}"; size: 2.69em; '
                     'background-color: transparent; vertical-align: 0.5; }\n' if on
                     else "/* rice-extras: off */\n")
 
@@ -108,6 +110,37 @@ def set_swaync(on):
     else:
         title["text"] = saved.read_text() if saved.exists() else "Notifications"
     SWAYNC.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n")
+    # the バカ bubble left of the title; style.css imports this file. It pops in when the panel
+    # opens and hops on hover. The hover rule keeps baka-pop in its list so GTK, which matches
+    # animations by name, doesn't replay the pop when the pointer leaves.
+    pop = "baka-pop 550ms ease-out 150ms 1 backwards"
+    SWAYNC_CSS.write_text(
+        "/* rice-extras: on */\n"
+        "@keyframes baka-pop { 0% { background-size: 0px 0px; } 60% { background-size: 53px 42px; }\n"
+        "  80% { background-size: 43px 34px; } 100% { background-size: 46px 37px; } }\n"
+        "@keyframes baka-hop { 0%, 100% { background-position: 0px 50%; } 35% { background-position: 0px 0%; }\n"
+        "  70% { background-position: 0px 60%; } }\n"
+        ".control-center .widget-title > label {\n"
+        f'  background-image: url("file://{BAKA.with_suffix(".png")}");\n'
+        "  background-repeat: no-repeat; background-position: 0px 50%;\n"
+        "  background-size: 46px 37px; padding-left: 54px; min-height: 44px;\n"
+        f"  animation: {pop};\n}}\n"
+        f".control-center .widget-title > label:hover {{ animation: {pop}, baka-hop 450ms ease-in-out 1; }}\n"
+        # Super+N: Hyprland's 200 ms slide is unchanged; as it lands the panel bounces up 8 px
+        # and settles (starts at 140 ms, so it arrives no later than before)
+        "@keyframes cc-bounce { 0% { transform: none; } 45% { transform: translateY(-8px); }\n"
+        "  75% { transform: translateY(3px); } 100% { transform: none; } }\n"
+        ".control-center { animation: cc-bounce 280ms ease-out 140ms 1; }\n"
+        # pop-up cards: slide in with a little overshoot, one faint slow coral shimmer, a coral left edge
+        "@keyframes noti-in { from { transform: translateX(110px); opacity: 0; } to { transform: none; opacity: 1; } }\n"
+        "@keyframes noti-sweep { from { background-position: -80% 0; } to { background-position: 180% 0; } }\n"
+        ".floating-notifications .notification-row .notification-background .notification {\n"
+        "  box-shadow: inset 3px 0 0 #dc6d4c;\n"
+        "  background-image: linear-gradient(90deg, transparent, alpha(#dc6d4c, 0.12), transparent);\n"
+        "  background-size: 60% 100%; background-repeat: no-repeat; background-position: -80% 0;\n"
+        "  animation: noti-in 450ms cubic-bezier(0.2, 1.3, 0.4, 1) 1 backwards,\n"
+        "             noti-sweep 1400ms ease-in-out 400ms 1 backwards;\n}\n" if on
+        else "/* rice-extras: off */\n")
     run("swaync-client", "-R")
     run("swaync-client", "-rs")
 

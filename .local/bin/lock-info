@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # lock-info np|notif|caps: one line of real information for the NERV hyprlock layout.
-#   np     what's playing (same player as the media keys, via rice-media); empty when nothing is
+#   np     what's playing (same player as the media keys, via rice-media) plus the key hint;
+#          empty when nothing is
 #   notif  how many notifications are waiting in swaync; empty when none
 #   caps   "CAPS LOCK" while Caps Lock is on (any keyboard); empty otherwise
 case ${1:-} in
@@ -13,6 +14,8 @@ np)
     ((${#line} > 52)) && line="${line:0:51}…"
     [[ $st == Playing ]] && icon="󰝚" || icon="󰏤"
     echo "$icon  $line"
+    # the media keys and Super+Ctrl+Z/X/C keep working while locked
+    echo "<span size='smaller' alpha='55%'>⏮ ⏯ ⏭   Super + Ctrl + Z X C</span>"
     ;;
 notif)
     n=$(swaync-client -c 2>/dev/null)
