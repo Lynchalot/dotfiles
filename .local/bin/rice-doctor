@@ -1,0 +1,389 @@
+#!/usr/bin/env python3
+"""rice-doctor: read-only health check for the HyDE rice. Changes nothing; each problem comes
+with the command or file that fixes it.
+
+  rice-doctor           every check, grouped
+  rice-doctor -q        only warnings and failures
+
+Exit status: 0 all good (warnings allowed), 1 at least one failure.
+
+Every check here is something that silently went wrong once (2026-10):
+  - GTK3 apps read gtk-dark.css (prefer-dark), so a fix made only in gtk.css never showed
+  - the settings portal read a different dconf database than HyDE writes (DCONF_PROFILE was
+    never given to systemd services), so GTK4 apps used a stale icon theme on every theme
+  - wallbash "theme" mode without a theme.dcol still coloured swaync/lock/apps from the wallpaper
+  - KDE's gtkconfig module overwrote GTK settings and deleted gtk-4.0/gtk.css
+  - a lock layout raised its wallpaper to the widgets' zindex, so some locks showed only the
+    blurred wallpaper (hyprlock's widget sort is not stable)
+  - three unlock escapes in 15 minutes locked the account (pam_faillock)
+"""
+import os, re, subprocess, sys, time
+from datetime import datetime
+from pathlib import Path
+
+H = Path.home()
+CFG = Path(os.environ.get("XDG_CONFIG_HOME", H / ".config"))
+STATE = Path(os.environ.get("XDG_STATE_HOME", H / ".local/state"))
+STATERC = STATE / "hyde/staterc"
+QUIET = "-q" in sys.argv[1:]
+TTY = sys.stdout.isatty()
+
+C = {"ok": "\033[32m", "warn": "\033[33m", "fail": "\033[31m", "dim": "\033[2m", "b": "\033[1m", "0": "\033[0m"}
+counts = {"ok": 0, "warn": 0, "fail": 0}
+_section = None
+
+
+def col(k, s):
+    return f"{C[k]}{s}{C['0']}" if TTY else s
+
+
+def section(name):
+    global _section
+    _section = name
+
+
+def report(level, msg, fix=None):
+    global _section
+    counts[level] += 1
+    if QUIET and level == "ok":
+        return
+    if _section:
+        print(col("b", f"\n{_section}"))
+        _section = None
+    mark = {"ok": "✓", "warn": "!", "fail": "✗"}[level]
+    print(f"  {col(level, mark)} {msg}")
+    if fix and level != "ok":
+        print(col("dim", f"      → {fix}"))
+
+
+def run(*cmd, env=None, timeout=5):
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
+        return r.returncode, r.stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        return 127, ""
+
+
+def keyval(path, key, sep="="):
+    """First `key = value` (or `key "value"`) in a config file, unquoted; None if absent."""
+    try:
+        for line in Path(path).read_text().splitlines():
+            m = re.match(rf'\s*{re.escape(key)}\s*{sep}\s*(.*?)\s*$', line)
+            if m:
+                return m.group(1).strip().strip('"\'')
+    except OSError:
+        pass
+    return None
+
+
+def staterc(key):
+    return keyval(STATERC, key)
+
+
+# ── theme ────────────────────────────────────────────────────────────────
+def check_theme():
+    section("Theme")
+    theme = staterc("HYDE_THEME") or ""
+    tdir = CFG / "hyde/themes" / theme
+    if not theme or not tdir.is_dir():
+        report("fail", f"current theme '{theme}' has no folder in ~/.config/hyde/themes", "pick a theme in the HyDE menu")
+        return theme, tdir
+    report("ok", f"theme: {theme}")
+
+    mode = staterc("enableWallDcol") or "?"
+    names = {"0": "theme", "1": "auto", "2": "dark", "3": "light"}
+    report("ok", f"wallbash mode: {names.get(mode, mode)}")
+    if mode == "0" and not (tdir / "theme.dcol").exists():
+        report("warn", "theme mode, but this theme has no theme.dcol: swaync, the lock screen and app "
+               "templates still take wallpaper colours", f"add {tdir}/theme.dcol (see Asuka NERV's)")
+
+    # NERV extras on exactly for the themes listed in rice-extras.conf
+    conf = CFG / "hyde/rice-extras.conf"
+    listed = set()
+    if conf.exists():
+        for line in conf.read_text().splitlines():
+            line = line.split("#", 1)[0]
+            if "=" in line:
+                k, v = (x.strip() for x in line.split("=", 1))
+                if v == "nerv":
+                    listed.add(k)
+    active = (STATE / "rice-extras/active").exists()
+    want = theme in listed
+    if active == want:
+        report("ok", f"NERV extras {'on' if active else 'off'}, as rice-extras.conf asks for this theme")
+    else:
+        report("warn", f"NERV extras are {'on' if active else 'off'} but should be {'on' if want else 'off'} for {theme}",
+               f"rice-extras {'on' if want else 'off'}")
+    return theme, tdir
+
+
+# ── GTK / icons / cursor ─────────────────────────────────────────────────
+def theme_var(tdir, name):
+    v = keyval(tdir / "hypr.theme", f"${name}")
+    return v or None
+
+
+def check_gtk(tdir):
+    section("GTK, icons, cursor")
+    env = dict(os.environ)
+    prof = CFG / "dconf/profile/hyde_hyprland"
+    if prof.exists():
+        env["DCONF_PROFILE"] = str(prof)
+
+    def gs(key):
+        rc, out = run("gsettings", "get", "org.gnome.desktop.interface", key, env=env)
+        return out.strip("'") if rc == 0 else None
+
+    gtk, icon, cursor = gs("gtk-theme"), gs("icon-theme"), gs("cursor-theme")
+    for label, have, want in (("GTK theme", gtk, theme_var(tdir, "GTK_THEME")),
+                              ("icon theme", icon, theme_var(tdir, "ICON_THEME")),
+                              ("cursor", cursor, theme_var(tdir, "CURSOR_THEME"))):
+        if want and have != want:
+            report("warn", f"{label} is {have}, but the theme sets {want}", "re-apply the theme (HyDE menu or theme.switch.sh -s)")
+        else:
+            report("ok", f"{label}: {have}")
+
+    ini = CFG / "gtk-3.0/settings.ini"
+    for label, key, want in (("GTK3 settings.ini theme", "gtk-theme-name", gtk), ("GTK3 settings.ini icons", "gtk-icon-theme-name", icon)):
+        have = keyval(ini, key)
+        if have and want and have != want:
+            report("warn", f"{label} is {have}, gsettings says {want}", "re-apply the theme; if it keeps reverting, check KDE's gtkconfig below")
+
+    xs = CFG / "xsettingsd/xsettingsd.conf"
+    if xs.exists():
+        have = keyval(xs, "Net/IconThemeName", sep=r"\s")
+        if have and icon and have != icon:
+            report("warn", f"xsettingsd icon theme is {have}, gsettings says {icon} (X11/XWayland apps)", "re-apply the theme")
+
+    # what GTK4 apps actually get: the settings portal
+    rc, out = run("gdbus", "call", "--session", "--dest", "org.freedesktop.portal.Desktop",
+                  "--object-path", "/org/freedesktop/portal/desktop",
+                  "--method", "org.freedesktop.portal.Settings.Read", "org.gnome.desktop.interface", "icon-theme")
+    m = re.search(r"'([^']*)'", out)
+    if rc != 0 or not m:
+        report("warn", "couldn't ask the settings portal (xdg-desktop-portal) for the icon theme",
+               "systemctl --user restart xdg-desktop-portal xdg-desktop-portal-gtk")
+    elif icon and m.group(1) != icon:
+        report("fail", f"GTK4 apps get icon theme {m.group(1)} from the settings portal, not {icon}",
+               "systemctl --user import-environment DCONF_PROFILE && systemctl --user restart xdg-desktop-portal-gtk")
+    else:
+        report("ok", f"settings portal agrees: {m.group(1)}")
+
+    rc, out = run("systemctl", "--user", "show-environment")
+    if "DCONF_PROFILE=" not in out:
+        report("warn", "systemd services don't have DCONF_PROFILE, so the portal reads the wrong dconf database",
+               "systemctl --user import-environment DCONF_PROFILE (hyprland.lua does this at login)")
+
+    # GTK4 folder should follow the current GTK theme
+    link = CFG / "gtk-4.0"
+    for base in (H / ".local/share/themes", Path("/usr/share/themes")):
+        g4 = base / (gtk or "") / "gtk-4.0"
+        if gtk and g4.is_dir():
+            if link.is_symlink() and Path(os.path.realpath(link)) == Path(os.path.realpath(g4)):
+                report("ok", "~/.config/gtk-4.0 follows the GTK theme")
+            else:
+                report("warn", f"~/.config/gtk-4.0 doesn't point at {g4} (GTK4/libadwaita apps keep the old look)",
+                       "re-apply the theme")
+            break
+
+    # custom themes keep gtk.css and gtk-dark.css identical (prefer-dark apps read the dark one)
+    if gtk:
+        d = H / ".local/share/themes" / gtk / "gtk-3.0"
+        a, b = d / "gtk.css", d / "gtk-dark.css"
+        if a.exists() and b.exists() and gtk.endswith("-NERV"):
+            if a.read_bytes() == b.read_bytes():
+                report("ok", f"{gtk}: gtk.css and gtk-dark.css match")
+            else:
+                report("fail", f"{gtk}: gtk-dark.css differs from gtk.css, and dark-mode apps read gtk-dark.css",
+                       f"cp {a} {b}")
+
+    kded = CFG / "kded6rc"
+    if Path("/usr/bin/kded6").exists():
+        on = keyval(kded, "autoload")
+        txt = kded.read_text() if kded.exists() else ""
+        if "[Module-gtkconfig]" in txt and on == "false":
+            report("ok", "KDE's gtkconfig module is off (it can't overwrite GTK settings)")
+        else:
+            report("warn", "KDE's gtkconfig module may run and overwrite GTK settings and gtk-4.0/gtk.css",
+                   "add [Module-gtkconfig] autoload=false to ~/.config/kded6rc")
+
+    fp = H / ".local/share/flatpak/overrides/global"
+    if fp.exists():
+        have = keyval(fp, "GTK_THEME")
+        if have and gtk and have != gtk:
+            report("warn", f"Flatpak apps are told GTK_THEME={have}, desktop uses {gtk}", "re-apply the theme")
+        elif have:
+            report("ok", f"Flatpak apps use {have}")
+
+
+# ── Qt ───────────────────────────────────────────────────────────────────
+def check_qt():
+    section("Qt")
+    rc, env = run("systemctl", "--user", "show-environment")
+    pt = re.search(r"^QT_QPA_PLATFORMTHEME=(.*)$", env, re.M)
+    if not pt:
+        report("warn", "QT_QPA_PLATFORMTHEME isn't set for the session, so Qt apps ignore qt6ct", "HyDE's env sets it to qt6ct")
+    else:
+        report("ok", f"Qt platform theme: {pt.group(1)}")
+    style = keyval(CFG / "qt6ct/qt6ct.conf", "style")
+    kv = keyval(CFG / "Kvantum/kvantum.kvconfig", "theme")
+    if style != "kvantum":
+        report("warn", f"qt6ct style is {style}, not kvantum: Qt apps won't follow the theme", "qt6ct → Appearance → Style: kvantum")
+    else:
+        report("ok", f"Qt6 apps use Kvantum ({kv})")
+
+
+# ── lock screen ──────────────────────────────────────────────────────────
+DEFAULT_Z = {"background": -1, "label": 0, "input-field": 0, "image": 0, "shape": 0}
+
+
+def blocks(text):
+    """(type, body) for each top-level widget block of a hyprlock config."""
+    out, cur, body = [], None, []
+    for line in text.splitlines():
+        s = line.split("#", 1)[0].strip()
+        m = re.match(r"^([a-z-]+)\s*\{$", s)
+        if m and cur is None:
+            cur, body = m.group(1), []
+        elif s == "}" and cur is not None:
+            out.append((cur, body))
+            cur = None
+        elif cur is not None:
+            body.append(s)
+    return out
+
+
+def check_lock():
+    section("Lock screen")
+    lp = keyval(CFG / "hypr/hyprlock.conf", "$LAYOUT_PATH")
+    name = staterc("HYPRLOCK_LAYOUT")
+    if not lp or not Path(lp).exists():
+        report("fail", f"hyprlock.conf points at a layout that doesn't exist: {lp}", "pick a layout: hyde-shell hyprlock --select")
+        return
+    if name and Path(lp).stem != name:
+        report("warn", f"HyDE thinks the layout is {name}, but hyprlock.conf uses {Path(lp).stem}",
+               "re-select the layout (or rice-extras on/off for the NERV lock)")
+    else:
+        report("ok", f"layout: {Path(lp).stem}")
+
+    text = Path(lp).read_text()
+    widgets = blocks(text)
+    z = lambda t, body: next((int(m.group(1)) for b in body if (m := re.match(r"zindex\s*=\s*(-?\d+)", b))), DEFAULT_Z.get(t, 0))
+    bgz = [z(t, b) for t, b in widgets if t == "background"]
+    others = [(t, z(t, b)) for t, b in widgets if t != "background" and t in DEFAULT_Z]
+    if bgz:
+        top = max(bgz)
+        hidden = [t for t, zz in others if zz <= top]
+        if hidden:
+            report("fail", f"{len(hidden)} widget(s) at zindex ≤ the wallpaper's ({top}): some locks will show only the "
+                   "blurred wallpaper", f"give every widget in {Path(lp).name} a zindex above {top}")
+        else:
+            report("ok", "every widget is drawn above the wallpaper")
+    if re.search(r"^\s*animations\s*\{", text, re.M):
+        report("warn", "layout has an animations {} block (froze hyprlock 0.9.6 here before)", f"remove it from {Path(lp).name}")
+    if re.search(r"cmd\[update:0\]", text):
+        report("warn", "a label uses cmd[update:0], which re-runs constantly and can starve the other labels",
+               "use a long interval, e.g. cmd[update:3600000]")
+
+    rc, out = run("faillock", "--user", os.environ.get("USER", ""))
+    now = time.time()
+    recent = 0
+    for m in re.finditer(r"(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\s+\S+\s+\S+\s+V", out):
+        if now - datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S").timestamp() < 900:
+            recent += 1
+    deny = int(keyval("/etc/security/faillock.conf", "deny") or 3)
+    if recent >= deny:
+        report("fail", f"{recent} failed logins in 15 min: the account is locked out for now", "wait it out, or: sudo faillock --user $USER --reset")
+    elif recent:
+        report("warn", f"{recent} failed login(s) in the last 15 min; {deny} locks you out", "sudo faillock --user $USER --reset")
+    else:
+        report("ok", "no recent failed logins")
+
+
+# ── services, Hyprland, reboot ───────────────────────────────────────────
+def check_session():
+    section("Session")
+    for unit, what in (("hyde-Hyprland-bar.service", "bar (waybar)"), ("swaync.service", "notifications (swaync)"),
+                       ("hyde-Hyprland-idle.service", "idle/lock daemon (hypridle)"),
+                       ("xdg-desktop-portal.service", "desktop portal"), ("xdg-desktop-portal-gtk.service", "portal GTK backend")):
+        rc, out = run("systemctl", "--user", "is-active", unit)
+        if out == "active":
+            report("ok", f"{what} running")
+        else:
+            report("fail", f"{what} is {out or 'not running'}", f"systemctl --user restart {unit}")
+    rc, out = run("systemctl", "--user", "list-units", "--state=failed", "--no-legend", "--plain")
+    failed = [l.split()[0] for l in out.splitlines() if l.strip()]
+    if failed:
+        report("warn", f"failed user units: {', '.join(failed)}", "systemctl --user status <unit>  (reset-failed once fixed)")
+    rc, out = run("hyprctl", "configerrors")
+    errs = [l for l in out.splitlines() if l.strip()]
+    if errs:
+        report("fail", f"Hyprland config errors: {errs[0][:90]}", "hyprctl configerrors")
+    else:
+        report("ok", "no Hyprland config errors")
+    rc, out = run(str(H / ".local/bin/reboot-check"))
+    if rc == 0 and out:
+        for line in out.splitlines():
+            report("warn", f"reboot needed: {line}", "reboot when convenient")
+    else:
+        report("ok", "no reboot needed")
+
+
+def check_wallpaper():
+    section("Wallpaper and login")
+    wall = Path(os.path.realpath(H / ".cache/hyde/wall.set"))
+    if not wall.exists():
+        report("fail", "current wallpaper link is broken", "pick a wallpaper (HyDE menu)")
+    else:
+        rc1, _ = run("pgrep", "-x", "awww-daemon")
+        rc2, _ = run("pgrep", "-x", "mpvpaper")
+        if rc1 and rc2:
+            report("warn", f"no wallpaper process running for {wall.name}", "hyde-shell wallpaper -s \"$(readlink -f ~/.cache/hyde/wall.set)\" --global")
+        else:
+            report("ok", f"wallpaper: {wall.name} ({'video, mpvpaper' if rc2 == 0 else 'awww'})")
+    thyx = Path("/usr/share/sddm/themes/thyx")
+    user = thyx / "theme.conf.user"
+    if user.exists():
+        bg = keyval(user, "Background")
+        f = thyx / bg if bg else None
+        if not f or not f.exists():
+            report("fail", f"login screen background {bg} is missing", "rice-sddm-wall")
+        elif not f.stat().st_mode & 0o004:
+            report("fail", f"login screen background {f.name} isn't readable by SDDM", f"chmod 644 {f}")
+        else:
+            report("ok", f"login screen background: {f.name}")
+
+
+def check_dotfiles():
+    section("Dotfiles")
+    git = ["git", f"--git-dir={H}/.dotfiles", f"--work-tree={H}"]
+    rc, out = run(*git, "status", "--porcelain", "--untracked-files=no", timeout=15)
+    if rc:
+        return
+    n = len([l for l in out.splitlines() if l.strip()])
+    rc2, ahead = run(*git, "rev-list", "--count", "@{u}..HEAD", timeout=15)
+    if n:
+        report("warn", f"{n} changed file(s) not committed", "review and commit the dotfiles")
+    else:
+        report("ok", "dotfiles committed")
+    if rc2 == 0 and ahead not in ("", "0"):
+        report("warn", f"{ahead} commit(s) not pushed", "git --git-dir=$HOME/.dotfiles --work-tree=$HOME push")
+
+
+def main():
+    if not QUIET:
+        print(col("b", "rice-doctor") + col("dim", "  (read-only; nothing is changed)"))
+    _, tdir = check_theme()
+    check_gtk(tdir)
+    check_qt()
+    check_lock()
+    check_session()
+    check_wallpaper()
+    check_dotfiles()
+    print(f"\n{col('ok', str(counts['ok']) + ' ok')}, {col('warn', str(counts['warn']) + ' warning(s)')}, "
+          f"{col('fail', str(counts['fail']) + ' failure(s)')}")
+    sys.exit(1 if counts["fail"] else 0)
+
+
+if __name__ == "__main__":
+    main()

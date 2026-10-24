@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
-# lock-info np|notif|caps: one line of real information for the NERV hyprlock layout.
-#   np     what's playing (same player as the media keys, via rice-media) plus the key hint;
-#          empty when nothing is
+# lock-info np|notif|caps|btn|art: real information for the NERV hyprlock layout.
+#   np     what's playing (same player as the media keys, via rice-media); empty when nothing is
 #   notif  how many notifications are waiting in swaync; empty when none
 #   caps   "CAPS LOCK" while Caps Lock is on (any keyboard); empty otherwise
+#   btn prev|play|next   media button glyphs (same player as the media keys): prev/next only
+#          while playing, play/pause while a player is playing or paused; empty otherwise
+#   art    path of the current album art for the image widget's reload_cmd; prints at once
+#          (cached cover, else the last one, else a transparent placeholder) and fetches new
+#          covers in a detached background job. hyprlock polls this itself: nothing here ever
+#          signals hyprlock (SIGUSR2 from HyDE's mpris helper could hang the lock, 2026-10-24).
 case ${1:-} in
 np)
     p=$("$HOME/.local/bin/rice-media" pick 2>/dev/null) || exit 0
@@ -14,8 +19,6 @@ np)
     ((${#line} > 52)) && line="${line:0:51}…"
     [[ $st == Playing ]] && icon="󰝚" || icon="󰏤"
     echo "$icon  $line"
-    # the media keys and Super+Ctrl+Z/X/C keep working while locked
-    echo "<span size='smaller' alpha='55%'>⏮ ⏯ ⏭   Super + Ctrl + Z X C</span>"
     ;;
 notif)
     n=$(swaync-client -c 2>/dev/null)
@@ -27,8 +30,50 @@ caps)
     done
     echo ""
     ;;
+btn)
+    p=$("$HOME/.local/bin/rice-media" pick 2>/dev/null) || exit 0
+    st=$(playerctl -p "$p" status 2>/dev/null)
+    case ${2:-} in
+    prev) [[ $st == Playing ]] && echo "󰒮" ;;
+    next) [[ $st == Playing ]] && echo "󰒭" ;;
+    play) [[ $st == Playing ]] && echo "󰏤"; [[ $st == Paused ]] && echo "󰐊" ;;
+    esac
+    ;;
+art)
+    dir=${XDG_CACHE_HOME:-$HOME/.cache}/rice-lock
+    none=$dir/none.png
+    mkdir -p "$dir"
+    [[ -f $none ]] || magick -size 1x1 xc:none "$none" 2>/dev/null
+    p=$("$HOME/.local/bin/rice-media" pick 2>/dev/null)
+    st=$([[ -n $p ]] && playerctl -p "$p" status 2>/dev/null)
+    url=$([[ $st == Playing || $st == Paused ]] && playerctl -p "$p" metadata mpris:artUrl 2>/dev/null)
+    if [[ -z $url ]]; then
+        echo "$none"
+        exit 0
+    fi
+    out=$dir/art-$(printf %s "$url" | md5sum | cut -c1-16).png
+    if [[ -f $out ]]; then
+        echo "$out" | tee "$dir/current"
+        exit 0
+    fi
+    # fetch in the background, detached from hyprlock's pipe so this returns immediately
+    (
+        tmp=$(mktemp "$dir/fetch.XXXXXX")
+        case $url in
+        file://*) cp -f "${url#file://}" "$tmp" ;;
+        *) curl -m 5 -Lso "$tmp" "$url" ;;
+        esac && magick "$tmp" -resize 320x320^ -gravity center -extent 320x320 "$out.part" &&
+            mv -f "$out.part" "$out"
+        rm -f "$tmp" "$out.part"
+        # keep the cache small: newest 20 covers
+        ls -1t "$dir"/art-*.png 2>/dev/null | tail -n +21 | xargs -r rm -f
+    ) </dev/null >/dev/null 2>&1 &
+    disown
+    cur=$(cat "$dir/current" 2>/dev/null)
+    [[ -f $cur ]] && echo "$cur" || echo "$none"
+    ;;
 *)
-    echo "usage: lock-info np|notif|caps" >&2
+    echo "usage: lock-info np|notif|caps|btn prev|play|next|art" >&2
     exit 2
     ;;
 esac
