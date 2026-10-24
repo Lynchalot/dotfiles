@@ -1338,7 +1338,7 @@ entry progress {
     box-shadow 300ms cubic-bezier(0, 0, 0.2, 1);
   border-image: none;
   box-shadow: inset 0 0 0 2px transparent;
-  background-color: #c34043;
+  background-color: #a8383b;
   color: #e6e1ca;
 }
 
@@ -2387,7 +2387,7 @@ button.suggested-action.flat:checked {
 }
 
 button.destructive-action {
-  background-color: #c34043;
+  background-color: #a8383b;
   color: #e6e1ca;
   box-shadow: none;
 }
@@ -5825,7 +5825,7 @@ infobar.warning:hover > revealer > box {
 
 infobar.error > revealer > box,
 infobar.error:backdrop > revealer > box {
-  background-color: #c34043;
+  background-color: #a8383b;
   color: #e6e1ca;
 }
 
@@ -5850,7 +5850,7 @@ infobar.error:backdrop > revealer > box *:link {
 }
 
 infobar.error:hover > revealer > box {
-  background-color: #c34043;
+  background-color: #a8383b;
 }
 
 /************
@@ -6148,7 +6148,7 @@ button.titlebutton:not(.suggested-action):not(
 button.titlebutton:not(.suggested-action):not(
     .destructive-action
   ).close:backdrop:active {
-  background-color: #c34043;
+  background-color: #a8383b;
   color: transparent;
 }
 
@@ -6156,7 +6156,7 @@ button.titlebutton:not(.suggested-action):not(.destructive-action).close:hover,
 button.titlebutton:not(.suggested-action):not(
     .destructive-action
   ).close:active {
-  background-color: shade(#c34043, 0.5);
+  background-color: shade(#a8383b, 0.5);
   color: transparent;
 }
 
@@ -8388,7 +8388,7 @@ layout {
 }
 
 entry.search-missing {
-  background-color: #c34043;
+  background-color: #a8383b;
   color: #e6e1ca;
 }
 
@@ -11669,3 +11669,8 @@ button.suggested-action:hover { background-color: #47719a; }
 .nautilus-window flowboxchild:selected .icon-item-background, flowbox flowboxchild:selected,
 .background.csd .view:selected, iconview:selected, .view:selected, .view:selected:focus {
     color: #e6e1ca; background-color: #2d4f67; }
+
+/* contrast sweep: dark text on the amber warning bar (Kanagawa had dark text there; the colour map made it parchment) */
+infobar.warning > revealer > box, infobar.warning > revealer > box label,
+infobar.warning > revealer > box button, infobar.warning > revealer > box button label,
+infobar.warning > revealer > box *:link { color: #11172a; }

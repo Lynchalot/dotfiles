@@ -8,8 +8,8 @@
 
 What "on" changes, and "off" puts back exactly:
   lock screen      HyDE's hyprlock layout -> NERV (off: the conf's default_lock)
-  launcher         search placeholder "検索 // Search apps…" and a バカ speech bubble instead of
-                   the Arch logo (~/.config/rofi/rice-extras.rasi, ~/.local/share/rice-extras/baka.svg)
+  launcher         search placeholder "検索 // Search apps…", a バカ speech bubble instead of
+                   the Arch logo, and バカ on the apps button (~/.config/rofi/rice-extras.rasi, ~/.local/share/rice-extras/baka.svg)
   notifications    centre heading "通知 // Notifications"
   bar power menu   Japanese tags next to Lock, Reboot, ... (mystyle9's power-flat.xml)
   colours          wallbash mode -> "theme", so the theme's own bar/launcher/terminal/Qt colour
@@ -86,6 +86,7 @@ def set_rofi(on):
     RASI.parent.mkdir(parents=True, exist_ok=True)
     # on: the バカ speech bubble replaces the Arch glyph in front of the search field
     RASI.write_text('/* rice-extras: on */\n'
+                    'configuration { display-drun: "バカ"; }\n'
                     'entry { placeholder: "検索 // Search apps…"; }\n'
                     'inputbar { children: [ "icon-baka", "entry" ]; padding: 0.55em 1.1em; }\n'
                     'entry { vertical-align: 0.5; }\n'
