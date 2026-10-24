@@ -22,17 +22,17 @@ general {
     gaps_in = 3
     gaps_out = 8
     border_size = 2
-    col.active_border = rgba(ca9ee6ff) rgba(f2d5cfff) 45deg
-    col.inactive_border = rgba(b4befecc) rgba(6c7086cc) 45deg
+    col.active_border = rgba(dc6d4cff) rgba(c27a83ff) rgba(7e9cd8ff) rgba(2d4f67ff) 45deg
+    col.inactive_border = rgba(25304ecc) rgba(1c2440cc) 45deg
     layout = dwindle
     resize_on_border = true
 }
 
 group {
-    col.border_active = rgba(ca9ee6ff) rgba(f2d5cfff) 45deg
-    col.border_inactive = rgba(b4befecc) rgba(6c7086cc) 45deg
-    col.border_locked_active = rgba(ca9ee6ff) rgba(f2d5cfff) 45deg
-    col.border_locked_inactive = rgba(b4befecc) rgba(6c7086cc) 45deg
+    col.border_active = rgba(dc6d4cff) rgba(c27a83ff) rgba(7e9cd8ff) rgba(2d4f67ff) 45deg
+    col.border_inactive = rgba(25304ecc) rgba(1c2440cc) 45deg
+    col.border_locked_active = rgba(d27e63ff) rgba(e6c384ff) 45deg
+    col.border_locked_inactive = rgba(25304ecc) rgba(1c2440cc) 45deg
 }
 
 decoration {
@@ -51,9 +51,9 @@ decoration {
 
 layerrule = rounding:10,waybar
 
-# Animated Mocha rainbow border on the active window
+# Animated Kanagawa-NERV border on the active window: coral -> rose -> steel -> deep blue
 general {
-    col.active_border = rgba(FF7979FF) rgba(F5C2E7FF) rgba(CBA6F7FF) rgba(A6ADC8FF) 45deg
+    col.active_border = rgba(dc6d4cff) rgba(c27a83ff) rgba(7e9cd8ff) rgba(2d4f67ff) 45deg
 }
 animations {
     bezier = liner, 1, 1, 1, 1
