@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# steam-wallbash: apply the wallbash palette to Steam through AdwSteamGtk.
+# Run by ~/.config/hyde/wallbash/always/steam.dcol after it writes AdwSteamGtk's custom.css.
+# Re-installs the AdwSteamGtk skin (neutral Adwaita base + our custom.css on top) only when the
+# colours changed. Steam picks the new colours up the next time it starts.
+#   steam-wallbash          apply if changed
+#   steam-wallbash --force  apply anyway
+APP=io.github.Foldex.AdwSteamGtk
+css=$HOME/.var/app/$APP/config/AdwSteamGtk/custom.css
+stamp=${XDG_STATE_HOME:-$HOME/.local/state}/steam-wallbash.sum
+lock=${XDG_RUNTIME_DIR:-/tmp}/steam-wallbash.lock
+
+flatpak info "$APP" >/dev/null 2>&1 || exit 0
+[[ -s $css ]] || exit 0
+exec 9>"$lock"
+flock -n 9 || exit 0 # another apply is already running
+
+sum=$(md5sum <"$css" | cut -c1-32)
+[[ ${1:-} != --force && -f $stamp && $(<"$stamp") == "$sum" ]] && exit 0
+
+if flatpak run "$APP" --install --options "custom_css:true;color_theme:adwaita" >/dev/null 2>&1; then
+    mkdir -p "$(dirname "$stamp")" && echo "$sum" >"$stamp"
+fi

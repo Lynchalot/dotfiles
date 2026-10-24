@@ -1,0 +1,35 @@
+${HOME}/.var/app/io.github.Foldex.AdwSteamGtk/config/AdwSteamGtk/custom.css|${HOME}/.local/bin/steam-wallbash
+/* Written by wallbash (~/.config/hyde/wallbash/always/steam.dcol) on every theme switch,
+   then applied to Steam by ~/.local/bin/steam-wallbash. Edits here are overwritten. */
+:root
+{
+	/* Accent: buttons, highlights, links */
+	--adw-accent-bg-rgb: <wallbash_1xa4_rgb> !important;
+	--adw-accent-fg-rgb: <wallbash_1xa9_rgb> !important;
+	--adw-accent-rgb: <wallbash_1xa7_rgb> !important;
+
+	/* Window and views: the theme's darkest shade */
+	--adw-window-bg-rgb: <wallbash_pry1_rgb> !important;
+	--adw-window-fg-rgb: <wallbash_1xa9_rgb> !important;
+	--adw-view-bg-rgb: <wallbash_pry1_rgb> !important;
+	--adw-view-fg-rgb: <wallbash_1xa9_rgb> !important;
+
+	/* Header bar, sidebars, dialogs, popovers: one step lighter */
+	--adw-headerbar-bg-rgb: <wallbash_1xa1_rgb> !important;
+	--adw-headerbar-fg-rgb: <wallbash_1xa9_rgb> !important;
+	--adw-headerbar-backdrop-rgb: <wallbash_pry1_rgb> !important;
+	--adw-sidebar-bg-rgb: <wallbash_1xa1_rgb> !important;
+	--adw-sidebar-fg-rgb: <wallbash_1xa9_rgb> !important;
+	--adw-sidebar-backdrop-rgb: <wallbash_pry1_rgb> !important;
+	--adw-secondary-sidebar-bg-rgb: <wallbash_1xa1_rgb> !important;
+	--adw-secondary-sidebar-fg-rgb: <wallbash_1xa9_rgb> !important;
+	--adw-secondary-sidebar-backdrop-rgb: <wallbash_pry1_rgb> !important;
+	--adw-dialog-bg-rgb: <wallbash_1xa1_rgb> !important;
+	--adw-dialog-fg-rgb: <wallbash_1xa9_rgb> !important;
+	--adw-popover-bg-rgb: <wallbash_1xa1_rgb> !important;
+	--adw-popover-fg-rgb: <wallbash_1xa9_rgb> !important;
+	--adw-thumbnail-bg-rgb: <wallbash_1xa1_rgb> !important;
+
+	/* Cards and boxed lists */
+	--adw-card-fg-rgb: <wallbash_1xa9_rgb> !important;
+}

@@ -235,8 +235,18 @@ _F = {description = "[Launcher|Apps] steam"}
 hl.bind(MOD .. " + F", hl.dsp.exec_cmd("steam"), _F)
 _F = {description = "[Launcher|Apps] vesktop"}
 hl.bind(MOD .. " + D", hl.dsp.exec_cmd("vesktop"), _F)
-_F = {description = "[Launcher|Apps] spotify"}
-hl.bind(MOD .. " + M", hl.dsp.exec_cmd("spotify"), _F)
+-- Spotify as a drop-down: lives on special:music, floating and centred over whatever you're
+-- doing. Super+M shows / hides it (and starts it the first time); music keeps playing when hidden.
+hl.window_rule({
+    name = "user_spotify_dropdown",
+    match = {class = "^([Ss]potify)$"},
+    workspace = "special:music silent",
+    float = true,
+    size = "(monitor_w*0.45) (monitor_h*0.75)",
+    center = true
+})
+_F = {description = "[Launcher|Apps] spotify drop-down"}
+hl.bind(MOD .. " + M", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-scratch music '^([Ss]potify)$' spotify"), _F)
 _F = {description = "[Launcher|Apps] claude"}
 hl.bind(MOD .. " + ALT + C", hl.dsp.exec_cmd("claude-desktop"), _F)
 
