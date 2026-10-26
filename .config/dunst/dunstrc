@@ -110,7 +110,7 @@ new_icon = skype
 # [notification]
 # font = "mononoki Nerd Font"
 # font_size = 10
-font = Cantarell 10,JetBrainsMono Nerd Font 10
+font = Sarasa UI J Nerd Font 10 10,JetBrainsMono Nerd Font 10
 
 dmenu = /usr/bin/rofi -config notification -dmenu -p dunst:
 
