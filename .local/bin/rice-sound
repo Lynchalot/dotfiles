@@ -33,8 +33,17 @@ name=${1:-notify}
 if [[ $name == --from-swaync ]]; then
     # the "UI sounds on/off" confirmation itself stays silent
     [[ ${SWAYNC_APP_NAME:-} == "UI sounds" ]] && exit 0
+    # HyDE's volume (replace id 8) and brightness (7) pop-ups: the keys already click (rice-vol)
+    [[ ${SWAYNC_APP_NAME:-} == "HyDE Notify" && ${SWAYNC_REPLACES_ID:-} =~ ^[78]$ ]] && exit 0
     name=notify
     [[ "${SWAYNC_APP_NAME:-} ${SWAYNC_SUMMARY:-}" == *[Ss]creenshot* ]] && name=shot
+    # USB drives (udiskie): plug when one appears or mounts, unplug when it goes
+    if [[ ${SWAYNC_APP_NAME:-} == udiskie ]]; then
+        case ${SWAYNC_SUMMARY,,} in
+        *removed* | *unmounted* | *eject* | *detached* | *locked*) name=unplug ;;
+        *) name=plug ;;
+        esac
+    fi
 fi
 f=$dir/$name.wav
 [[ -f $f ]] || exit 0
