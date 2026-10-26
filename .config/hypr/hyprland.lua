@@ -192,6 +192,10 @@ hl.on(
         -- so the workspace assignments below actually match.
         hl.exec_cmd("zen-browser")            -- -> workspace 1  (user_ws_zen)
         hl.exec_cmd("vesktop")                -- -> special      (user_ws_vesktop)
+        -- Steam waits until the network is up (NetworkManager, max 90 s), then starts minimised
+        -- to the tray: started earlier it never connects and the store stays blank. Its XDG
+        -- autostart entry (~/.config/autostart/steam.desktop) is Hidden=true so it can't race this.
+        hl.exec_cmd("sh -c 'nm-online -q -t 90 && steam -silent'")
         -- NB: do NOT add `thunar --daemon` here. On Thunar 4.20 it returns
         -- immediately (exit 0) and leaves no process -- the daemon role is handled
         -- by D-Bus activation via org.xfce.Thunar.service. It is a silent no-op.
@@ -421,4 +425,17 @@ do
         hl.curve("nervPop", {type = "bezier", points = {{0.2, 1.3}, {0.4, 1}}})
         hl.animation({leaf = "windowsIn", enabled = true, speed = 2.6 * ds, bezier = "nervPop", style = "popin 80%"})
     end
+end
+
+-- ─────────────────────────────────────────────────────────────
+-- CRT screen shader (HyDE menu → Eye Care → Shaders → crt, ~/.config/hypr/shaders/crt.frag):
+-- its curve and colour fringing sample outside the redrawn area, so Hyprland must redraw the
+-- whole screen every frame while it's on (debug:damage_tracking 0); back to full damage
+-- tracking (2, the default) for every other shader. HyDE's config watcher reloads on a change.
+-- ─────────────────────────────────────────────────────────────
+do
+    local state = (os.getenv("XDG_STATE_HOME") or ((os.getenv("HOME") or "") .. "/.local/state"))
+    local ok, sh = pcall(dofile, state .. "/hyde/lua_state/shaders.lua")
+    local crt = ok and type(sh) == "table" and sh.key == "crt"
+    pcall(hl.config, {debug = {damage_tracking = crt and 0 or 2}})
 end
